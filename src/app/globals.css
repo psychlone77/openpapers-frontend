@@ -1,3 +1,5 @@
+@import url('https://cdn.jsdelivr.net/gh/dreampulse/computer-modern-web-font@master/fonts.css');
+/* https://github.com/dreampulse/computer-modern-web-font */
 @import "tailwindcss";
 
 :root {
@@ -5,6 +7,7 @@
   --background: #ffffff;
   --background-light: #f6eeff;
   --foreground: #171717;
+  --foreground-light: #484848;
   --primary: #6d28d9; /* Purple */
   --primary-light: #c0aaf3;
   --secondary: #9333ea; /* Violet */
@@ -16,12 +19,14 @@
   --error: #dc2626; /* Red */
   --success: #16a34a; /* Green */
   --warning: #f97316; /* Orange */
+  --answer-correct: var(--color-green-100);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-background-light: var(--background-light);
   --color-foreground: var(--foreground);
+  --color-foreground-light: var(--foreground-light);
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);
   --color-secondary: var(--secondary);
@@ -33,14 +38,17 @@
   --color-error: var(--error);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-answer-correct: var(--answer-correct);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-answer: "Computer Modern Serif", serif;
 }
 
 [data-theme="dark"] {
   --background: #030712;
   --background-light: #222836;
   --foreground: #ededed;
+  --foreground-light: #bdc1c7;
   --primary: #8b5cf6;
   --primary-light: #a78bfa;
   --secondary: #a855f7;
@@ -52,6 +60,7 @@
   --error: #ef4444;
   --success: #22c55e;
   --warning: #fb923c;
+  --answer-correct: var(--color-green-900);
 }
 
 body {
