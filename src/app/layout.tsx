@@ -24,12 +24,22 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="light" suppressHydrationWarning>
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <head>
+        <script>
+          const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const savedTheme = localStorage.getItem("theme");
+          const initialTheme = savedTheme ? savedTheme === "dark" : systemPrefersDark;
+          console.log(initialTheme);
+          document.documentElement.setAttribute("data-theme", initialTheme ? "dark" : "light");
+        </script>
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
         <Navbar />
-        {children}
+        <div className="pt-16">{children}</div>
       </body>
     </html>
   );

@@ -44,11 +44,24 @@
   --font-answer: "Computer Modern Serif", serif;
 }
 
+@layer utilities {
+  .dotted-bg {
+    --dot-bg: var(--color-background);
+    --dot-color: var(--color-foreground);
+    --dot-size: 1px;
+    --dot-space: 22px;
+    background:
+      linear-gradient(90deg, var(--dot-bg) calc(var(--dot-space) - var(--dot-size)), transparent 1%) center / var(--dot-space) var(--dot-space),
+      linear-gradient(var(--dot-bg) calc(var(--dot-space) - var(--dot-size)), transparent 1%) center / var(--dot-space) var(--dot-space),
+      var(--dot-color);
+  }
+}
+
 [data-theme="dark"] {
-  --background: #030712;
-  --background-light: #222836;
-  --foreground: #ededed;
-  --foreground-light: #bdc1c7;
+  --background: #151b23;
+  --background-light: #212830;
+  --foreground: #d1d7e0;
+  --foreground-light: #edf4ff;
   --primary: #8b5cf6;
   --primary-light: #a78bfa;
   --secondary: #a855f7;

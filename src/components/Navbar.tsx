@@ -24,7 +24,6 @@ export function Navbar() {
     const initialTheme = savedTheme ? savedTheme === "dark" : systemPrefersDark;
 
     setIsDarkMode(initialTheme);
-    document.documentElement.setAttribute("data-theme", initialTheme ? "dark" : "light");
   }, []);
 
   const toggleTheme = () => {
@@ -42,7 +41,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="shadow-sm font-sans">
+    <header className="fixed top-0 w-screen shadow-sm font-sans bg-transparent backdrop-blur-xl">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex-shrink-0 flex items-center">
@@ -54,7 +53,7 @@ export function Navbar() {
             <NavigationMenu.List className="flex space-x-8">
               {routes.map((route) => (
                 <NavigationMenu.Item key={route.name}>
-                  <NavigationMenu.Link
+                  <Link
                     href={route.path}
                     className={`${
                       checkPathname(route.path)
@@ -63,7 +62,7 @@ export function Navbar() {
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
                     {route.name}
-                  </NavigationMenu.Link>
+                  </Link>
                 </NavigationMenu.Item>
               ))}
             </NavigationMenu.List>
@@ -93,11 +92,11 @@ export function Navbar() {
                     <span className="sr-only">Open main menu</span>
                     <HamburgerMenuIcon />
                   </NavigationMenu.Trigger>
-                  <NavigationMenu.Content className="absolute right-0 bg-background-light shadow-md rounded-md mt-2">
+                  <NavigationMenu.Content className="z-10 absolute right-0 bg-background-light shadow-md rounded-md mt-2">
                     <NavigationMenu.List className="w-64 px-2 pt-2 pb-3 space-y-1">
                       {routes.map((route) => (
                         <NavigationMenu.Item key={route.name}>
-                          <NavigationMenu.Link
+                          <Link
                             href={route.path}
                             className={`${
                               checkPathname(route.path)
@@ -106,7 +105,7 @@ export function Navbar() {
                             } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
                           >
                             {route.name}
-                          </NavigationMenu.Link>
+                          </Link>
                         </NavigationMenu.Item>
                       ))}
                       <NavigationMenu.Item>

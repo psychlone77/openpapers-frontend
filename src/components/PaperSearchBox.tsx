@@ -32,7 +32,7 @@ export function PaperSearchBox() {
   ];
 
   return (
-    <div className="flex gap-4 items-center justify-center p-4 bg-background-light rounded-2xl shadow-md">
+    <div className="flex flex-col md:flex-row gap-4 items-center justify-center p-4 bg-background-light rounded-2xl shadow-md">
       <SearchableDropdown
         options={subjects}
         value={subject}
