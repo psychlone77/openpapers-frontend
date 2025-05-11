@@ -30,15 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="light" suppressHydrationWarning>
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <head>
-        {/* prettier-ignore */}
-        <script>
-          const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-          const savedTheme = localStorage.getItem("theme");
-          const initialTheme = savedTheme ? savedTheme === "dark" : systemPrefersDark;
-          console.log(initialTheme);
-        </script>
-      </head>
+      <head></head>
       <AntdRegistry>
         <Providers>
           <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>

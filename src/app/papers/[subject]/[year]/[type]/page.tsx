@@ -7,7 +7,7 @@ import { CheckOutlined } from "@ant-design/icons";
 import { Typography, Layout, Menu, Divider, Radio, Card, Row, Col, theme } from "antd";
 import { useState } from "react";
 
-const { Title, Paragraph, Text } = Typography;
+const { Title } = Typography;
 const { Content } = Layout;
 
 export default function PapersPage({
