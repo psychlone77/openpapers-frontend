@@ -1,83 +1,27 @@
-@import url('https://cdn.jsdelivr.net/gh/dreampulse/computer-modern-web-font@master/fonts.css');
+@import url("https://cdn.jsdelivr.net/gh/dreampulse/computer-modern-web-font@master/fonts.css");
 /* https://github.com/dreampulse/computer-modern-web-font */
 @import "tailwindcss";
 
-:root {
-  /* Light Mode Colors */
-  --background: #ffffff;
-  --background-light: #f6eeff;
-  --foreground: #171717;
-  --foreground-light: #484848;
-  --primary: #6d28d9; /* Purple */
-  --primary-light: #c0aaf3;
-  --secondary: #9333ea; /* Violet */
-  --secondary-light: #a855f7;
-  --accent: #c084fc; /* Lavender */
-  --accent-light: #d8b4fe;
-  --muted: #6b7280; /* Darker Gray */
-  --border: #374151;
-  --error: #dc2626; /* Red */
-  --success: #16a34a; /* Green */
-  --warning: #f97316; /* Orange */
-  --answer-correct: var(--color-green-100);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-background-light: var(--background-light);
-  --color-foreground: var(--foreground);
-  --color-foreground-light: var(--foreground-light);
-  --color-primary: var(--primary);
-  --color-primary-light: var(--primary-light);
-  --color-secondary: var(--secondary);
-  --color-secondary-light: var(--secondary-light);
-  --color-accent: var(--accent);
-  --color-accent-light: var(--accent-light);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-error: var(--error);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-answer-correct: var(--answer-correct);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-answer: "Computer Modern Serif", serif;
-}
-
 @layer utilities {
   .dotted-bg {
-    --dot-bg: var(--color-background);
-    --dot-color: var(--color-foreground);
+    --dot-bg: var(--ant-color-bg-base, #fff);
+    --dot-color: var(--ant-color-text, #171717);
     --dot-size: 1px;
     --dot-space: 22px;
-    background:
-      linear-gradient(90deg, var(--dot-bg) calc(var(--dot-space) - var(--dot-size)), transparent 1%) center / var(--dot-space) var(--dot-space),
-      linear-gradient(var(--dot-bg) calc(var(--dot-space) - var(--dot-size)), transparent 1%) center / var(--dot-space) var(--dot-space),
+    background: linear-gradient(
+          90deg,
+          var(--dot-bg) calc(var(--dot-space) - var(--dot-size)),
+          transparent 1%
+        )
+        center / var(--dot-space) var(--dot-space),
+      linear-gradient(var(--dot-bg) calc(var(--dot-space) - var(--dot-size)), transparent 1%) center /
+        var(--dot-space) var(--dot-space),
       var(--dot-color);
   }
 }
 
-[data-theme="dark"] {
-  --background: #151b23;
-  --background-light: #212830;
-  --foreground: #d1d7e0;
-  --foreground-light: #edf4ff;
-  --primary: #8b5cf6;
-  --primary-light: #a78bfa;
-  --secondary: #a855f7;
-  --secondary-light: #c084fc;
-  --accent: #d8b4fe;
-  --accent-light: #e9d5ff;
-  --muted: #9ca3af;
-  --border: #e5e7eb;
-  --error: #ef4444;
-  --success: #22c55e;
-  --warning: #fb923c;
-  --answer-correct: var(--color-green-900);
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--ant-color-bg-base);
+  color: var(----ant-color-text);
   font-family: var(--font-geist-sans);
 }

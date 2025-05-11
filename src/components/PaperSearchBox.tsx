@@ -1,16 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { SearchableDropdown } from "./SearchableDropdown";
-import { SelectDropdown } from "./SelectDropdown";
-import { ArrowRightIcon } from "@radix-ui/react-icons";
+import { Form, Select, Button, Space, Flex, theme } from "antd";
+import { ArrowRightOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 
 export function PaperSearchBox() {
   const router = useRouter();
-  const [subject, setSubject] = useState("");
-  const [year, setYear] = useState("");
-  const [paperType, setPaperType] = useState("");
+  const [form] = Form.useForm();
+  const { token } = theme.useToken();
 
   const subjects = [
     { label: "Physics", value: "Physics" },
@@ -31,30 +29,76 @@ export function PaperSearchBox() {
     { label: "Practical", value: "Practical" },
   ];
 
+  const onFinish = (values: any) => {
+    const { subject, year, paperType } = values;
+    router.push(`/papers/${subject?.toLowerCase()}/${year}/${paperType?.toLowerCase()}`);
+  };
+
   return (
-    <div className="flex flex-col md:flex-row gap-4 items-center justify-center p-4 bg-background-light rounded-2xl shadow-md">
-      <SearchableDropdown
-        options={subjects}
-        value={subject}
-        setValue={setSubject}
-        placeholder="Select a subject"
-      />
-      <SearchableDropdown
-        options={years}
-        value={year}
-        setValue={setYear}
-        placeholder="Select year"
-      />
-      <SearchableDropdown
-        options={paperTypes}
-        value={paperType}
-        setValue={setPaperType}
-        placeholder="Select Exam type"
-      />
-      <button onClick={() => router.push("/papers/physics/2021/mcq")} className="flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary-light px-4 py-2 rounded-md text-sm font-medium hover:cursor-pointer transition duration-200 ease-in-out">
-        Search Papers
-        <ArrowRightIcon />
-      </button>
-    </div>
+    <Form
+      form={form}
+      onFinish={onFinish}
+      layout="inline"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
+        borderRadius: "8px",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        width: "100%",
+        margin: "auto",
+        backgroundColor: token.colorBgContainer,
+      }}
+    >
+      <Space wrap size={24}>
+        <Form.Item name="subject" rules={[{ required: true, message: "Please select a subject" }]}>
+          <Select
+            showSearch
+            placeholder="Select a subject"
+            options={subjects}
+            style={{ width: 200 }}
+            filterOption={(input, option) =>
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+            }
+          />
+        </Form.Item>
+        <Form.Item name="year" rules={[{ required: true, message: "Please select a year" }]}>
+          <Select
+            showSearch
+            placeholder="Select year"
+            options={years}
+            style={{ width: 200 }}
+            filterOption={(input, option) =>
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+            }
+          />
+        </Form.Item>
+        <Form.Item
+          name="paperType"
+          rules={[{ required: true, message: "Please select a paper type" }]}
+        >
+          <Select
+            showSearch
+            placeholder="Select Exam type"
+            options={paperTypes}
+            style={{ width: 200 }}
+            filterOption={(input, option) =>
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+            }
+          />
+        </Form.Item>
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<ArrowRightOutlined />}
+            className="flex items-center justify-center"
+          >
+            Search Papers
+          </Button>
+        </Form.Item>
+      </Space>
+    </Form>
   );
 }
