@@ -4,7 +4,7 @@ import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { paper } from "@/lib/constants/testPaper";
 import { PaperSchema } from "@/lib/types/paperSchema";
 import { CheckOutlined } from "@ant-design/icons";
-import { Typography, Layout, Menu, Divider, Radio, Card, Row, Col, theme } from "antd";
+import { Typography, Layout, Menu, Divider, Radio, Card, Row, Col, theme, Button } from "antd";
 import { useState } from "react";
 
 const { Title } = Typography;
@@ -19,12 +19,20 @@ export default function PapersPage({
   const [selectedQuestion, setSelectedQuestion] = useState<PaperSchema["questions"][0]>(
     paper.questions[0]
   );
+  const [showAnswer, setShowAnswer] = useState(false);
 
   // Create menu items from questions
   const menuItems = paper.questions.map((question) => ({
     key: question.question_number.toString(),
     label: (
-      <div style={{ display: "flex", justifyContent: "space-between", height: "100%" }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          height: "100%",
+        }}
+      >
         <span>Q{question.question_number}</span>
         <div style={{ textAlign: "right", fontSize: "12px", color: token.colorTextSecondary }}>
           {question.subject_unit} ({question.marks} {question.marks > 1 ? "marks" : "mark"})
@@ -37,7 +45,10 @@ export default function PapersPage({
   const handleMenuSelect = ({ key }: { key: string }) => {
     const questionNumber = parseInt(key);
     const question = paper.questions.find((q) => q.question_number === questionNumber);
-    if (question) setSelectedQuestion(question);
+    if (question) {
+      setSelectedQuestion(question);
+      setShowAnswer(false); // Reset answer visibility when changing questions
+    }
   };
 
   return (
@@ -79,15 +90,15 @@ export default function PapersPage({
               <MarkdownRenderer content={selectedQuestion.question_text} />
             </div>
 
+            <Button type="link" onClick={() => setShowAnswer(true)} disabled={showAnswer}>
+              Show Answer
+            </Button>
+
             <Divider style={{ margin: `${token.marginSM}px 0` }} />
 
             {/* Options */}
             {selectedQuestion.options && (
-              <Radio.Group
-                style={{ width: "100%", color: token.colorText }}
-                disabled
-                defaultValue={selectedQuestion.options.findIndex((opt) => opt.is_correct)}
-              >
+              <Radio.Group disabled style={{ width: "100%", color: token.colorText }}>
                 {selectedQuestion.options.map((option, index) => {
                   const isCorrect = option.is_correct;
 
@@ -98,7 +109,8 @@ export default function PapersPage({
                         marginBottom: token.marginSM,
                         padding: token.paddingSM,
                         borderRadius: token.borderRadiusLG,
-                        backgroundColor: isCorrect ? token.colorSuccessBg : "transparent",
+                        backgroundColor:
+                          showAnswer && isCorrect ? token.colorSuccessBg : "transparent",
                         display: "flex",
                         alignItems: "center",
                       }}
@@ -115,7 +127,7 @@ export default function PapersPage({
                         </div>
                       </Radio>
 
-                      {isCorrect && (
+                      {showAnswer && isCorrect && (
                         <CheckOutlined
                           style={{
                             marginLeft: "auto",
