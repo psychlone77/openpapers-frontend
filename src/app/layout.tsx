@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "katex/dist/katex.min.css";
 import { Navbar } from "@/components/Navbar";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
+import "@ant-design/v5-patch-for-react-19";
+import Providers from "@/app/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,23 +27,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
   return (
     <html lang="en" className="light" suppressHydrationWarning>
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <head>
+        {/* prettier-ignore */}
         <script>
           const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
           const savedTheme = localStorage.getItem("theme");
           const initialTheme = savedTheme ? savedTheme === "dark" : systemPrefersDark;
           console.log(initialTheme);
-          document.documentElement.setAttribute("data-theme", initialTheme ? "dark" : "light");
         </script>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
-        <Navbar />
-        <div className="pt-16">{children}</div>
-      </body>
+      <AntdRegistry>
+        <Providers>
+          <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
+            <Navbar />
+            <div className="pt-16">{children}</div>
+          </body>
+        </Providers>
+      </AntdRegistry>
     </html>
   );
 }
