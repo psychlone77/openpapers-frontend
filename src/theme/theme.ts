@@ -17,6 +17,7 @@ export const lightTheme: ThemeConfig = {
     colorBgContainer: "#ffffff",
     colorBgElevated: "#f6eeff",
     colorBgLayout: "#ffffff",
+    colorSuccessBg: "#ceffd7",
 
     // Text colors
     colorText: "#171717",
@@ -66,6 +67,7 @@ export const darkTheme: ThemeConfig = {
     colorBgContainer: "#212830",
     colorBgElevated: "#212830",
     colorBgLayout: "#151b23",
+    colorSuccessBg: "#024f21",
 
     // Text colors
     colorText: "#d1d7e0",

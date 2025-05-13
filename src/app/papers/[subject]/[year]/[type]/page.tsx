@@ -1,13 +1,16 @@
 "use client";
 
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import getPaper from "@/lib/actions/paperActions";
 import { paper } from "@/lib/constants/testPaper";
 import { PaperSchema } from "@/lib/types/paperSchema";
 import { CheckOutlined } from "@ant-design/icons";
 import { Typography, Layout, Menu, Divider, Radio, Card, Row, Col, theme, Button } from "antd";
+import { notFound } from "next/navigation";
 import { useState } from "react";
+import React from "react";
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 const { Content } = Layout;
 
 export default function PapersPage({
@@ -15,6 +18,14 @@ export default function PapersPage({
 }: {
   params: Promise<{ subject: string; year: string; type: string }>;
 }) {
+  // Extract parameters from the URL
+  // Unwrap params Promise
+  const resolvedParams = React.use(params);
+  const { subject, year, type } = resolvedParams;
+  const paper = getPaper(resolvedParams.subject, resolvedParams.year, resolvedParams.type);
+  if (!paper) {
+    return notFound();
+  }
   const { token } = theme.useToken();
   const [selectedQuestion, setSelectedQuestion] = useState<PaperSchema["questions"][0]>(
     paper.questions[0]
@@ -56,6 +67,7 @@ export default function PapersPage({
       <Title level={2}>
         {paper.subject} - {paper.year} - {paper.type}
       </Title>
+      <Paragraph style={{ marginBottom: token.margin }}>{paper.description}</Paragraph>
 
       <Row gutter={48} style={{ marginTop: token.marginLG }}>
         {/* Question List (Left Side) */}
@@ -86,19 +98,22 @@ export default function PapersPage({
               fontFamily: "var(--font-answer, serif)",
             }}
           >
-            <div style={{ fontSize: "18px" }}>
-              <MarkdownRenderer content={selectedQuestion.question_text} />
+            <div className="w-full flex flex-col">
+              <div style={{ fontSize: "18px" }}>
+                <MarkdownRenderer content={selectedQuestion.question_text} />
+              </div>
+              <div className="w-fit self-end">
+                <Button type="link" onClick={() => setShowAnswer(!showAnswer)}>
+                  {showAnswer ? "Hide Answer" : "Show Answer"}
+                </Button>
+              </div>
             </div>
-
-            <Button type="link" onClick={() => setShowAnswer(true)} disabled={showAnswer}>
-              Show Answer
-            </Button>
 
             <Divider style={{ margin: `${token.marginSM}px 0` }} />
 
             {/* Options */}
             {selectedQuestion.options && (
-              <Radio.Group disabled style={{ width: "100%", color: token.colorText }}>
+              <>
                 {selectedQuestion.options.map((option, index) => {
                   const isCorrect = option.is_correct;
 
@@ -115,7 +130,12 @@ export default function PapersPage({
                         alignItems: "center",
                       }}
                     >
-                      <Radio value={index} style={{ marginRight: token.marginSM }}>
+                      <Radio
+                        disabled
+                        checked={showAnswer && isCorrect}
+                        value={index}
+                        style={{ marginRight: token.marginSM }}
+                      >
                         <div
                           style={{
                             fontSize: "18px",
@@ -139,9 +159,32 @@ export default function PapersPage({
                     </div>
                   );
                 })}
-              </Radio.Group>
+              </>
             )}
           </Card>
+          <div style={{ marginTop: token.marginLG, textAlign: "right" }}>
+            <Button
+              type="primary"
+              onClick={() => {
+                const currentIndex = paper.questions.findIndex(
+                  (q) => q.question_number === selectedQuestion.question_number
+                );
+                if (currentIndex < paper.questions.length - 1) {
+                  const nextQuestion = paper.questions[currentIndex + 1];
+                  setSelectedQuestion(nextQuestion);
+                  setShowAnswer(false);
+                }
+              }}
+              disabled={
+                paper.questions.findIndex(
+                  (q) => q.question_number === selectedQuestion.question_number
+                ) ===
+                paper.questions.length - 1
+              }
+            >
+              Next Question
+            </Button>
+          </div>
         </Col>
       </Row>
     </Content>
