@@ -21,6 +21,8 @@ export function PaperSearchBox() {
     { label: "2021", value: "2021" },
     { label: "2022", value: "2022" },
     { label: "2023", value: "2023" },
+    { label: "2024", value: "2024" },
+    { label: "2025", value: "2025" },
   ];
 
   const paperTypes = [
@@ -29,9 +31,14 @@ export function PaperSearchBox() {
     { label: "Practical", value: "Practical" },
   ];
 
-  const onFinish = (values: any) => {
+  const onFinish = async (values: any) => {
     const { subject, year, paperType } = values;
+    // const res = await fetch(`http://localhost:3001/papers?subject=${subject}&year=${year}&type=${paperType}`);
+    // const data = await res.json();
+    // console.log("Received data:", data);
     router.push(`/papers/${subject?.toLowerCase()}/${year}/${paperType?.toLowerCase()}`);
+
+
   };
 
   return (

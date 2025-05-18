@@ -1,192 +1,138 @@
-"use client";
+'use client';
 
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
-import getPaper from "@/lib/actions/paperActions";
-import { paper } from "@/lib/constants/testPaper";
-import { PaperSchema } from "@/lib/types/paperSchema";
-import { CheckOutlined } from "@ant-design/icons";
-import { Typography, Layout, Menu, Divider, Radio, Card, Row, Col, theme, Button } from "antd";
-import { notFound } from "next/navigation";
-import { useState } from "react";
-import React from "react";
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { Button, Card, Space, Typography, message } from 'antd';
 
-const { Title, Paragraph } = Typography;
-const { Content } = Layout;
+type QuestionOption = {
+  _id: string;
+  option_text: string;
+  option_image: string;
+  is_correct: boolean;
+};
 
-export default function PapersPage({
-  params,
-}: {
-  params: Promise<{ subject: string; year: string; type: string }>;
-}) {
-  // Extract parameters from the URL
-  // Unwrap params Promise
-  const resolvedParams = React.use(params);
-  const { subject, year, type } = resolvedParams;
-  const paper = getPaper(resolvedParams.subject, resolvedParams.year, resolvedParams.type);
-  if (!paper) {
-    return notFound();
-  }
-  const { token } = theme.useToken();
-  const [selectedQuestion, setSelectedQuestion] = useState<PaperSchema["questions"][0]>(
-    paper.questions[0]
-  );
-  const [showAnswer, setShowAnswer] = useState(false);
+type Question = {
+  _id: string;
+  question_number: number;
+  question_text: string;
+  subject_unit: string;
+  options: QuestionOption[];
+  answer: string;
+  question_images: string[];
+  marks: number;
+  difficulty: string;
+};
 
-  // Create menu items from questions
-  const menuItems = paper.questions.map((question) => ({
-    key: question.question_number.toString(),
-    label: (
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-          height: "100%",
-        }}
-      >
-        <span>Q{question.question_number}</span>
-        <div style={{ textAlign: "right", fontSize: "12px", color: token.colorTextSecondary }}>
-          {question.subject_unit} ({question.marks} {question.marks > 1 ? "marks" : "mark"})
-        </div>
-      </div>
-    ),
-  }));
+type Paper = {
+  _id: string;
+  year: number;
+  subject: string;
+  type: string;
+  description: string;
+  questions: Question[];
+};
 
-  // Handle menu selection
-  const handleMenuSelect = ({ key }: { key: string }) => {
-    const questionNumber = parseInt(key);
-    const question = paper.questions.find((q) => q.question_number === questionNumber);
-    if (question) {
-      setSelectedQuestion(question);
-      setShowAnswer(false); // Reset answer visibility when changing questions
-    }
+export default function PaperPage() {
+  const { subject, year, paperType } = useParams() as {
+    subject: string;
+    year: string;
+    paperType: string;
   };
 
+  const [paper, setPaper] = useState<Paper | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const fetchPaper = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:3001/papers?subject=Mathematics&year=2025&type=MCQ`
+        );
+        const data = await res.json();
+        setPaper(data[0]); // expecting array of papers
+      } catch (error) {
+        console.error('Failed to fetch paper:', error);
+      }
+    };
+
+    fetchPaper();
+  }, [subject, year, paperType]);
+
+  const handleOptionSelect = (questionId: string, optionId: string) => {
+    if (submitted) return;
+    setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+  };
+
+  const handleSubmit = () => {
+    if (!paper) return;
+    if (Object.keys(answers).length !== paper.questions.length) {
+      message.warning('Please answer all questions before submitting.');
+      return;
+    }
+    setSubmitted(true);
+  };
+
+  if (!paper) return <div>Loading...</div>;
+
   return (
-    <Content style={{ padding: token.padding * 4 }}>
-      <Title level={2}>
-        {paper.subject} - {paper.year} - {paper.type}
-      </Title>
-      <Paragraph style={{ marginBottom: token.margin }}>{paper.description}</Paragraph>
+    <div className="max-w-4xl mx-auto p-6">
+      <Typography.Title level={2}>
+        {paper.subject} - {paper.type} ({paper.year})
+      </Typography.Title>
+      <Typography.Paragraph>{paper.description}</Typography.Paragraph>
 
-      <Row gutter={48} style={{ marginTop: token.marginLG }}>
-        {/* Question List (Left Side) */}
-        <Col span={6}>
-          <Title level={4}>Questions</Title>
-          <Menu
-            mode="vertical"
-            items={menuItems}
-            selectedKeys={[selectedQuestion.question_number.toString()]}
-            onSelect={handleMenuSelect}
-            style={{
-              borderRight: 0,
-              maxHeight: "80vh",
-              overflow: "auto",
-              borderRadius: token.borderRadius,
-            }}
-          />
-        </Col>
-
-        {/* Question Content (Right Side) */}
-        <Col span={18}>
-          <Title level={4}>Q{selectedQuestion.question_number}.</Title>
-          <Card
-            variant="outlined"
-            style={{
-              borderColor: token.colorPrimaryBorder,
-              borderRadius: token.borderRadiusLG,
-              fontFamily: "var(--font-answer, serif)",
-            }}
-          >
-            <div className="w-full flex flex-col">
-              <div style={{ fontSize: "18px" }}>
-                <MarkdownRenderer content={selectedQuestion.question_text} />
-              </div>
-              <div className="w-fit self-end">
-                <Button type="link" onClick={() => setShowAnswer(!showAnswer)}>
-                  {showAnswer ? "Hide Answer" : "Show Answer"}
-                </Button>
-              </div>
-            </div>
-
-            <Divider style={{ margin: `${token.marginSM}px 0` }} />
-
-            {/* Options */}
-            {selectedQuestion.options && (
-              <>
-                {selectedQuestion.options.map((option, index) => {
-                  const isCorrect = option.is_correct;
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        {paper.questions.map((q) => {
+          const selectedOptionId = answers[q._id];
+          return (
+            <Card key={q._id} title={`Q${q.question_number}: ${q.question_text}`}>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                {q.options.map((opt) => {
+                  const isSelected = selectedOptionId === opt._id;
+                  const isCorrect = opt.is_correct;
+                  const showCorrect = submitted && isCorrect;
+                  const isWrongSelection = submitted && isSelected && !isCorrect;
 
                   return (
-                    <div
-                      key={index}
-                      style={{
-                        marginBottom: token.marginSM,
-                        padding: token.paddingSM,
-                        borderRadius: token.borderRadiusLG,
-                        backgroundColor:
-                          showAnswer && isCorrect ? token.colorSuccessBg : "transparent",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
+                    <Button
+                      key={opt._id}
+                      type={
+                        showCorrect
+                          ? 'primary'
+                          : isWrongSelection
+                          ? 'default'
+                          : isSelected
+                          ? 'dashed'
+                          : 'default'
+                      }
+                      danger={isWrongSelection}
+                      onClick={() => handleOptionSelect(q._id, opt._id)}
+                      block
                     >
-                      <Radio
-                        disabled
-                        checked={showAnswer && isCorrect}
-                        value={index}
-                        style={{ marginRight: token.marginSM }}
-                      >
-                        <div
-                          style={{
-                            fontSize: "18px",
-                            fontFamily: "var(--font-answer, serif)",
-                            color: token.colorText,
-                          }}
-                        >
-                          <MarkdownRenderer content={option.option_text} />
-                        </div>
-                      </Radio>
-
-                      {showAnswer && isCorrect && (
-                        <CheckOutlined
-                          style={{
-                            marginLeft: "auto",
-                            color: token.colorSuccess,
-                            fontSize: "20px",
-                          }}
-                        />
-                      )}
-                    </div>
+                      {opt.option_text}
+                    </Button>
                   );
                 })}
-              </>
-            )}
-          </Card>
-          <div style={{ marginTop: token.marginLG, textAlign: "right" }}>
-            <Button
-              type="primary"
-              onClick={() => {
-                const currentIndex = paper.questions.findIndex(
-                  (q) => q.question_number === selectedQuestion.question_number
-                );
-                if (currentIndex < paper.questions.length - 1) {
-                  const nextQuestion = paper.questions[currentIndex + 1];
-                  setSelectedQuestion(nextQuestion);
-                  setShowAnswer(false);
-                }
-              }}
-              disabled={
-                paper.questions.findIndex(
-                  (q) => q.question_number === selectedQuestion.question_number
-                ) ===
-                paper.questions.length - 1
-              }
-            >
-              Next Question
-            </Button>
-          </div>
-        </Col>
-      </Row>
-    </Content>
+                {submitted && (
+                  <Typography.Text type="secondary">
+                    Correct Answer: {q.answer}
+                  </Typography.Text>
+                )}
+              </Space>
+            </Card>
+          );
+        })}
+
+        <Button
+          type="primary"
+          size="large"
+          onClick={handleSubmit}
+          disabled={submitted}
+        >
+          Submit Answers
+        </Button>
+      </Space>
+    </div>
   );
 }
