@@ -33,10 +33,10 @@ type Paper = {
 };
 
 export default function PaperPage() {
-  const { subject, year, paperType } = useParams() as {
+  const { subject, year, type } = useParams() as {
     subject: string;
     year: string;
-    paperType: string;
+    type: string;
   };
 
   const [paper, setPaper] = useState<Paper | null>(null);
@@ -47,7 +47,7 @@ export default function PaperPage() {
     const fetchPaper = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3001/papers?subject=Mathematics&year=2025&type=MCQ`
+          `http://localhost:3001/papers?subject=${subject}&year=${year}&type=${type}`
         );
         const data = await res.json();
         setPaper(data[0]); // expecting array of papers
@@ -57,7 +57,7 @@ export default function PaperPage() {
     };
 
     fetchPaper();
-  }, [subject, year, paperType]);
+  }, [subject, year, type]);
 
   const handleOptionSelect = (questionId: string, optionId: string) => {
     if (submitted) return;
