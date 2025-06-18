@@ -7,10 +7,7 @@ export default async function getPaper(
 ): Promise<PaperSchema | null> {
   try {
     const res = await fetch(
-      `http://localhost:5000/papers?subject=${subject}&year=${year}&type=${type}`,
-      {
-        cache: "force-cache",
-      }
+      `http://localhost:5000/papers?subject=${subject}&year=${year}&type=${type}`
     );
     const data = await res.json();
     if (data && data.length > 0) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { PaperSearchBox } from "@/components/PaperSearchBox";
-import { Typography, theme } from "antd";
+import { Typography } from "antd";
 
 export default function Home() {
   return (

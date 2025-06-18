@@ -34,7 +34,7 @@ export default function RootLayout({
         <Providers>
           <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
             <Navbar />
-            <div className="pt-16">{children}</div>
+            <div className="pt-8">{children}</div>
           </body>
         </Providers>
       </AntdRegistry>

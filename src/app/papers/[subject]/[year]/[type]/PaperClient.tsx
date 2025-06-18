@@ -1,14 +1,12 @@
 "use client";
 
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
-import getPaper from "@/lib/actions/paperActions";
 import { PaperSchema } from "@/lib/types/paperSchema";
 import { CheckOutlined } from "@ant-design/icons";
 import { Typography, Layout, Menu, Divider, Radio, Card, Row, Col, theme, Button } from "antd";
-import { notFound } from "next/navigation";
-import { useEffect, useState } from "react";
-import React from "react";
+import { useState } from "react";
 import Loading from "./loading";
+import Image from "next/image";
 
 const { Title, Paragraph } = Typography;
 const { Content } = Layout;
@@ -133,10 +131,12 @@ export default function PaperClient({ paper }: { paper: PaperSchema }) {
                         }}
                       >
                         {selectedQuestion.question_images.map((image, index) => (
-                          <img
+                          <Image
                             key={index}
                             src={`data:image/jpg;base64,${image}`}
                             alt={`Question Image ${index + 1}`}
+                            width={500}
+                            height={300}
                             style={{
                               width: "50%",
                               maxWidth: "80%",
@@ -179,8 +179,8 @@ export default function PaperClient({ paper }: { paper: PaperSchema }) {
                           }}
                         >
                           <Radio
-                            disabled
                             checked={showAnswer && isCorrect}
+                            key={selectedQuestion.question_number + index}
                             value={index}
                             style={{ marginRight: token.marginSM }}
                           >
@@ -192,6 +192,22 @@ export default function PaperClient({ paper }: { paper: PaperSchema }) {
                               }}
                             >
                               <MarkdownRenderer content={option.option_text} />
+                              {option.option_image && (
+                                <Image
+                                  src={`data:image/jpg;base64,${option.option_image}`}
+                                  alt={`Option Image ${index + 1}`}
+                                  width={500}
+                                  height={300}
+                                  style={{
+                                    width: "50%",
+                                    maxWidth: "80%",
+                                    maxHeight: "300px",
+                                    objectFit: "contain",
+                                    borderRadius: token.borderRadiusLG,
+                                    marginTop: token.marginSM,
+                                  }}
+                                />
+                              )}
                             </div>
                           </Radio>
 

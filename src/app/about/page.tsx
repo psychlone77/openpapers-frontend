@@ -1,7 +1,6 @@
 "use client";
 
 import { Typography, Card, Row, Col, Space, Avatar } from "antd";
-import { UserOutlined, CodeOutlined, DatabaseOutlined, FileImageOutlined } from "@ant-design/icons";
 
 const { Title, Paragraph } = Typography;
 
@@ -10,25 +9,25 @@ const team = [
     name: "Nithika Dias",
     role: "Cyber Security Engineering",
     contribution: "Implemented the frontend of the application.",
-    icon: <CodeOutlined className="text-blue-500 text-xl" />,
+    src: "https://media.licdn.com/dms/image/v2/D5603AQHOZwpJyuJU0g/profile-displayphoto-shrink_400_400/B56ZdZwlbFHoAo-/0/1749557598486?e=1755734400&v=beta&t=FxxOiV8Y8xjOJ1tguaqT2qQYfwliRLHP-WzVRz0on74",
   },
   {
     name: "Nisith Dissanayake",
     role: "Data Science and Engineering",
     contribution: "Developed the image extraction model from past papers.",
-    icon: <FileImageOutlined className="text-blue-500 text-xl" />,
+    src: "https://media.licdn.com/dms/image/v2/D5603AQFU3UJDFOoCLw/profile-displayphoto-shrink_400_400/B56ZUHwpV5GsAg-/0/1739591949339?e=1755734400&v=beta&t=A3YwXpyGTE_lMN8Z4CSO5YWbvull-r2CDnJ0uS6JpsE",
   },
   {
     name: "Pavitha Dissanayake",
     role: "Data Science and Engineering",
     contribution: "Built the text extraction pipeline.",
-    icon: <UserOutlined className="text-blue-500 text-xl" />,
+    src: "https://media.licdn.com/dms/image/v2/D5603AQHH2sFTYzO8hw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1724753059247?e=1755734400&v=beta&t=WJo0Etg5gSCmEBzSIqWdEy9_qXL1Ud2lLZ2-dSn-zAo",
   },
   {
     name: "Pasindu Dulmith",
     role: "Data Science and Engineering",
     contribution: "Developed the backend, cloud database, and paper upload script.",
-    icon: <DatabaseOutlined className="text-blue-500 text-xl" />,
+    src: "https://media.licdn.com/dms/image/v2/D5603AQEBXVVjbhl9gA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1702455481539?e=1755734400&v=beta&t=FSTPbZ2shHxvTY7SjY1R3WSwe3MunkD30bWFwTVwF-o",
   },
 ];
 
@@ -64,7 +63,7 @@ export default function AboutPage() {
                     <Avatar
                       size={48}
                       className="bg-blue-100 flex items-center justify-center"
-                      icon={member.icon}
+                      src={member.src}
                     />
                     <div>
                       <Typography.Title level={4} className="mb-0">

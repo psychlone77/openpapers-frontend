@@ -44,7 +44,7 @@ const GuidePage: React.FC = () => {
   return (
     <div className="min-h-screen py-12 px-4" style={{ background: token.colorBgLayout }}>
       <Card
-        bordered={false}
+        variant="borderless"
         style={{
           maxWidth: 900,
           margin: "0 auto",
@@ -71,7 +71,7 @@ const GuidePage: React.FC = () => {
         <Steps
           direction="vertical"
           size="default"
-          items={guideSteps.map((step, index) => ({
+          items={guideSteps.map((step) => ({
             title: (
               <Text strong style={{ fontSize: 18 }}>
                 {step.title}
