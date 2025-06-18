@@ -1,9 +1,7 @@
 "use client";
 
-import { Navbar } from "@/components/Navbar";
 import { PaperSearchBox } from "@/components/PaperSearchBox";
-import { Typography, theme } from "antd";
-import { useEffect } from "react";
+import { Typography } from "antd";
 
 export default function Home() {
   return (

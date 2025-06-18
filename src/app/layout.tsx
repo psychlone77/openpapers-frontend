@@ -30,12 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="light" suppressHydrationWarning>
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <head></head>
       <AntdRegistry>
         <Providers>
           <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
             <Navbar />
-            <div className="pt-16">{children}</div>
+            <div className="pt-8">{children}</div>
           </body>
         </Providers>
       </AntdRegistry>
