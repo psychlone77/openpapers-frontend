@@ -1,5 +1,8 @@
-import { ThemeProvider } from "@/contexts/ThemeProvider";
+"use client";
+
+import React from "react";
+import { CarbonThemeProvider } from "@/contexts/CarbonThemeProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  return <ThemeProvider>{children}</ThemeProvider>;
+  return <CarbonThemeProvider>{children}</CarbonThemeProvider>;
 }

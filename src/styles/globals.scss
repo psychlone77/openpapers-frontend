@@ -1,0 +1,273 @@
+// src/styles/globals.scss
+// OpenPapers Theme Tokens
+@use "./theme-tokens.scss" as *;
+
+// IBM Carbon Design System Styles
+@import "@carbon/styles/css/styles.css";
+
+// KaTeX Math Styles
+@import "katex/dist/katex.min.css";
+
+// IBM Plex Fonts
+@import "@ibm/plex-sans/css/ibm-plex-sans-default.css";
+@import "@ibm/plex-serif/css/ibm-plex-serif-default.css";
+@import "@ibm/plex-mono/css/ibm-plex-mono-default.css";
+
+// Base resets and global layout
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--op-font-sans);
+  background-color: var(--cds-background, #ffffff);
+  color: var(--cds-text-primary, #161616);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Academic Engineering Grid Background
+.openpapers-grid-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      to right,
+      var(--cds-border-subtle-01, rgba(0, 0, 0, 0.05)) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      var(--cds-border-subtle-01, rgba(0, 0, 0, 0.05)) 1px,
+      transparent 1px
+    );
+  background-size: 32px 32px;
+}
+
+// Reading typography for exam questions and math
+.question-typography {
+  font-family: var(--op-font-serif);
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: var(--cds-text-primary);
+
+  p {
+    margin-bottom: 1rem;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .katex-display {
+    margin: 1.25rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5rem 0;
+  }
+}
+
+// Solution content styling
+.solution-content {
+  font-family: var(--op-font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--cds-text-primary);
+
+  p {
+    margin-bottom: 1rem;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  ol.cds--list--ordered {
+    margin: 1rem 0;
+    padding-left: 1.75rem;
+
+    li.cds--list__item {
+      margin-bottom: 1.25rem;
+      line-height: 1.75;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .katex-display {
+    margin: 1rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.25rem 0;
+  }
+}
+
+// Carbon ContainedList styling & alignment
+.cds--contained-list {
+  background-color: var(--cds-layer-01);
+  border: 1px solid var(--cds-border-subtle-01);
+
+  .cds--contained-list__header {
+    background-color: var(--cds-layer-02);
+    border-bottom: 1px solid var(--cds-border-subtle-01);
+    position: relative;
+    padding-right: 1rem;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+
+  .cds--contained-list__action,
+  .cds--contained-list-item__action {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 1rem;
+    inset-inline-end: 1rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    pointer-events: none;
+
+    .cds--tag {
+      margin: 0;
+      min-width: 36px;
+      justify-content: center;
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+
+  .cds--contained-list-item {
+    position: relative;
+
+    .cds--contained-list-item__content {
+      padding-right: 4.5rem !important;
+    }
+
+    &.op-contained-list-item--active {
+      border-left: 4px solid var(--cds-interactive, #0f62fe) !important;
+      background-color: var(--cds-layer-selected-01, #e0e0e0);
+
+      .cds--contained-list-item__content {
+        background-color: var(--cds-layer-selected-01, #e0e0e0);
+      }
+    }
+  }
+}
+
+// Carbon SelectableTile options styling
+.op-option-tile.cds--tile--selectable {
+  margin-bottom: 0.75rem;
+  width: 100%;
+  border-radius: 0 !important;
+  border: 1px solid var(--cds-border-subtle-01);
+  background-color: var(--cds-layer-01);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 1.125rem 1.25rem !important;
+  min-height: 56px;
+  cursor: pointer;
+  transition:
+    background-color 110ms ease,
+    border-color 110ms ease;
+
+  &:hover {
+    background-color: var(--cds-layer-hover-01);
+    border-color: var(--cds-border-strong-01);
+  }
+
+  &.cds--tile--is-selected,
+  &.selected {
+    border-color: var(--cds-interactive, #0f62fe) !important;
+    background-color: var(--cds-layer-selected-01) !important;
+  }
+
+  &.correct {
+    border-color: var(--cds-support-success, #24a148) !important;
+    background-color: var(--cds-support-success-subtle, rgba(36, 161, 72, 0.1)) !important;
+  }
+
+  &.incorrect {
+    border-color: var(--cds-support-error, #da1e28) !important;
+    background-color: var(--cds-support-error-subtle, rgba(218, 30, 40, 0.1)) !important;
+  }
+
+  .cds--tile-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto;
+    max-width: 100%;
+  }
+
+  .cds--tile__checkmark {
+    position: static !important;
+    width: 22px !important;
+    height: 22px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0;
+    margin-left: 0 !important;
+    margin-right: 1.25rem !important;
+    opacity: 1 !important;
+
+    svg {
+      width: 22px !important;
+      height: 22px !important;
+    }
+  }
+
+  &.correct .cds--tile__checkmark svg {
+    fill: var(--cds-support-success, #24a148) !important;
+  }
+
+  &.incorrect .cds--tile__checkmark svg {
+    fill: var(--cds-support-error, #da1e28) !important;
+  }
+}
+
+// Option item selectable tile (legacy fallback)
+.option-tile {
+  border: 1px solid var(--cds-border-subtle-01);
+  background-color: var(--cds-layer-01);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0 !important;
+}
+
+// Question navigation item tile (legacy fallback)
+.question-nav-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--cds-border-subtle-01);
+  cursor: pointer;
+  background-color: transparent;
+  transition: background-color 110ms ease;
+  border-radius: 0 !important;
+
+  &:hover {
+    background-color: var(--cds-layer-hover-01);
+  }
+
+  &.active {
+    background-color: var(--cds-layer-selected-01);
+    border-left: 4px solid var(--cds-interactive, #0f62fe);
+  }
+}

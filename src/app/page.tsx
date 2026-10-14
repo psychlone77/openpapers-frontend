@@ -1,23 +1,55 @@
 "use client";
 
+import React from "react";
 import { PaperSearchBox } from "@/components/PaperSearchBox";
-import { Typography } from "antd";
+import { Tag } from "@/components/carbon";
 
 export default function Home() {
   return (
-    <main className="flex flex-col items-center p-24">
-      <div className="-z-10 fixed top-0 left-0 bottom-0 h-svh w-screen dotted-bg"></div>
-      <Typography.Title level={1} style={{ fontSize: "2.25rem", textAlign: "center" }}>
-        Welcome to OpenPapers
-      </Typography.Title>
-      <Typography.Paragraph
-        style={{ fontSize: "1.125rem", textAlign: "center", marginTop: "1rem" }}
-      >
-        An open platform for all exam papers
-      </Typography.Paragraph>
-      <div className="mt-16">
-        <PaperSearchBox />
+    <div
+      style={{
+        maxWidth: "1100px",
+        margin: "0 auto",
+        padding: "4rem 1.5rem 6rem 1.5rem",
+        textAlign: "center",
+      }}
+    >
+      <div style={{ marginBottom: "1rem" }}>
+        <Tag type="blue" size="md">
+          Open Access Examination Archive
+        </Tag>
+        <Tag type="teal" size="md">
+          Sri Lankan A-Levels & Beyond
+        </Tag>
       </div>
-    </main>
+
+      <h1
+        style={{
+          fontSize: "2.75rem",
+          fontWeight: 700,
+          letterSpacing: "-0.03em",
+          lineHeight: 1.2,
+          color: "var(--cds-text-primary)",
+          marginBottom: "1rem",
+        }}
+      >
+        Practice Past Papers with Precision
+      </h1>
+
+      <p
+        style={{
+          fontSize: "1.25rem",
+          color: "var(--cds-text-secondary)",
+          maxWidth: "680px",
+          margin: "0 auto 3rem auto",
+          lineHeight: 1.6,
+        }}
+      >
+        Browse comprehensive past examination papers, step through questions with full LaTeX
+        equations, and practice with immediate solution verification.
+      </p>
+
+      <PaperSearchBox />
+    </div>
   );
 }

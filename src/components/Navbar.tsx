@@ -1,110 +1,124 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Button, Dropdown, Layout } from "antd";
-import { MenuOutlined, MoonOutlined, SunOutlined, GithubOutlined } from "@ant-design/icons";
-import { useTheme } from "@/contexts/ThemeProvider";
-
-const { Header } = Layout;
-const routes = [
-  { name: "Papers", path: "/papers" },
-  { name: "Guide", path: "/guide" },
-  { name: "About Us", path: "/about" },
-];
+import { useCarbonTheme } from "@/contexts/CarbonThemeProvider";
+import {
+  Header,
+  HeaderContainer,
+  HeaderName,
+  HeaderNavigation,
+  HeaderMenuItem,
+  HeaderGlobalBar,
+  HeaderGlobalAction,
+  HeaderMenuButton,
+  HeaderSideNavItems,
+  SkipToContent,
+  SideNav,
+  SideNavItems,
+  Moon,
+  Sun,
+  LogoGithub,
+} from "./carbon";
 
 export function Navbar() {
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode, toggleTheme } = useCarbonTheme();
   const pathname = usePathname();
 
-  const menuItems = routes.map((route) => ({
-    key: route.path,
-    label: <Link href={route.path}>{route.name}</Link>,
-  }));
-
-  const mobileMenuItems = [
-    ...menuItems,
-    {
-      key: "contribute",
-      label: (
-        <Link
-          href="https://github.com/psychlone77/openpapers-data-collecting"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Contribute
-        </Link>
-      ),
-      icon: <GithubOutlined />,
-    },
+  const routes = [
+    { name: "Papers", path: "/papers" },
+    { name: "Guide", path: "/guide" },
+    { name: "About Us", path: "/about" },
   ];
 
+  const isRouteActive = (routePath: string) => {
+    if (routePath === "/") {
+      return pathname === "/";
+    }
+    return pathname === routePath || pathname.startsWith(`${routePath}/`);
+  };
+
   return (
-    <Header style={{ padding: 0 }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link href="/">
-              <span className="text-primary font-bold text-xl">OpenPapers</span>
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex flex-grow justify-center w-full">
-            <Menu
-              style={{ width: "250px", display: "flex", justifyContent: "center" }}
-              mode="horizontal"
-              selectedKeys={[pathname]}
-              items={menuItems}
+    <>
+      <HeaderContainer
+        render={({ isSideNavExpanded, onClickSideNavExpand }) => (
+          <Header aria-label="OpenPapers Platform">
+            <SkipToContent href="#main-content" />
+            <HeaderMenuButton
+              aria-label={isSideNavExpanded ? "Close menu" : "Open menu"}
+              onClick={onClickSideNavExpand}
+              isActive={isSideNavExpanded}
+              aria-expanded={isSideNavExpanded}
             />
-          </div>
+            <HeaderName as={Link} href="/" prefix="">
+              <span style={{ fontWeight: 700, letterSpacing: "-0.02em" }}>OpenPapers</span>
+            </HeaderName>
 
-          {/* Actions */}
-          <div className="flex items-center gap-4">
-            {/* Theme Toggle */}
-            <Button
-              onClick={toggleTheme}
-              icon={isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-              className="flex justify-center items-center"
-              aria-label="Toggle dark mode"
-              type="text"
-            />
-
-            {/* Contribute Button (Desktop) */}
-            <div className="hidden md:block">
-              <Button type="primary">
-                <Link
-                  href="https://github.com/psychlone77/openpapers-data-collecting"
-                  target="_blank"
-                  rel="noopener noreferrer"
+            <HeaderNavigation aria-label="Main Navigation">
+              {routes.map((route) => (
+                <HeaderMenuItem
+                  key={route.path}
+                  as={Link}
+                  href={route.path}
+                  isActive={isRouteActive(route.path)}
                 >
-                  <GithubOutlined className="mr-2" />
-                  Contribute
-                </Link>
-              </Button>
-            </div>
+                  {route.name}
+                </HeaderMenuItem>
+              ))}
+            </HeaderNavigation>
 
-            {/* Mobile Menu */}
-            <div className="md:hidden">
-              <Dropdown
-                menu={{
-                  items: mobileMenuItems,
-                }}
-                trigger={["click"]}
-                placement="bottomRight"
+            <HeaderGlobalBar>
+              <HeaderGlobalAction
+                aria-label={isDarkMode ? "Switch to light theme" : "Switch to dark theme"}
+                tooltipAlignment="end"
+                onClick={toggleTheme}
               >
-                <Button
-                  type="text"
-                  icon={<MenuOutlined />}
-                  className="flex items-center justify-center"
-                  aria-label="Open main menu"
-                />
-              </Dropdown>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Header>
+                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </HeaderGlobalAction>
+              <HeaderGlobalAction
+                aria-label="Contribute on GitHub"
+                tooltipAlignment="end"
+                onClick={() => {
+                  window.open(
+                    "https://github.com/psychlone77/openpapers-data-collecting",
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                }}
+              >
+                <LogoGithub size={20} />
+              </HeaderGlobalAction>
+            </HeaderGlobalBar>
+
+            <SideNav
+              aria-label="Mobile Navigation"
+              expanded={isSideNavExpanded}
+              isPersistent={false}
+              onSideNavBlur={onClickSideNavExpand}
+            >
+              <SideNavItems>
+                <HeaderSideNavItems>
+                  {routes.map((route) => (
+                    <HeaderMenuItem
+                      key={route.path}
+                      as={Link}
+                      href={route.path}
+                      isActive={isRouteActive(route.path)}
+                      onClick={onClickSideNavExpand}
+                    >
+                      {route.name}
+                    </HeaderMenuItem>
+                  ))}
+                </HeaderSideNavItems>
+              </SideNavItems>
+            </SideNav>
+          </Header>
+        )}
+      />
+      <div style={{ height: "48px" }} />
+    </>
   );
 }
+
+export default Navbar;

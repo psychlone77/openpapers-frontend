@@ -1,260 +1,498 @@
 "use client";
 
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
-import { PaperSchema } from "@/lib/types/paperSchema";
-import { CheckOutlined } from "@ant-design/icons";
-import { Typography, Layout, Menu, Divider, Radio, Card, Row, Col, theme, Button } from "antd";
-import { useState } from "react";
-import Loading from "./loading";
+import React, { useState } from "react";
 import Image from "next/image";
+import { PaperSchema } from "@/lib/types/paperSchema";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import {
+  Button,
+  Tile,
+  Tag,
+  ArrowRight,
+  ArrowLeft,
+  Help,
+  ContainedList,
+  ContainedListItem,
+  SelectableTile,
+  Breadcrumb,
+  BreadcrumbItem,
+  CheckmarkFilled,
+} from "@/components/carbon";
 
-const { Title, Paragraph } = Typography;
-const { Content } = Layout;
+export interface PaperClientProps {
+  paper: PaperSchema;
+}
 
-export default function PaperClient({ paper }: { paper: PaperSchema }) {
-  // Extract parameters from the URL
-  // Unwrap params Promise
-  const [selectedQuestion, setSelectedQuestion] = useState<PaperSchema["questions"][0] | null>(
-    paper.questions[0]
-  );
-  const { token } = theme.useToken();
+function resolveImageSrc(src: string): string {
+  if (!src) return "";
+  if (
+    src.startsWith("/") ||
+    src.startsWith("http://") ||
+    src.startsWith("https://") ||
+    src.startsWith("data:")
+  ) {
+    return src;
+  }
+  return `data:image/jpeg;base64,${src}`;
+}
+
+export default function PaperClient({ paper }: PaperClientProps) {
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
 
-  // Create menu items from questions
-  const menuItems = paper?.questions.map((question) => ({
-    key: question.question_number.toString(),
-    label: (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          height: "100%",
-        }}
-      >
-        <span style={{ fontStyle: "bold" }}>Q{question.question_number}</span>
-        <div style={{ textAlign: "right", fontSize: "12px", color: token.colorTextSecondary }}>
-          {question.subject_unit && (
-            <span
-              style={{
-                marginRight: 4,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                maxWidth: "100px",
-                display: "inline-block",
-              }}
-            >
-              {question.subject_unit}
-            </span>
-          )}
-          {question.question_text && (
-            <span
-              style={{
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                maxWidth: "200px",
-                display: "inline-block",
-              }}
-            >
-              {question.question_text}
-            </span>
-          )}{" "}
-          {question.marks && `${question.marks} ${question.marks > 1 ? "marks" : "mark"}`}
-        </div>
-      </div>
-    ),
-  }));
+  const selectedQuestion = paper.questions[selectedQuestionIndex];
 
-  // Handle menu selection
-  const handleMenuSelect = ({ key }: { key: string }) => {
-    const questionNumber = parseInt(key);
-    const question = paper?.questions.find((q) => q.question_number === questionNumber);
-    if (question) {
-      setSelectedQuestion(question);
-      setShowAnswer(false); // Reset answer visibility when changing questions
+  const handleSelectQuestion = (index: number) => {
+    setSelectedQuestionIndex(index);
+    setSelectedOptionIndex(null);
+    setShowAnswer(false);
+  };
+
+  const handleNextQuestion = () => {
+    if (selectedQuestionIndex < paper.questions.length - 1) {
+      handleSelectQuestion(selectedQuestionIndex + 1);
     }
   };
 
+  const handlePrevQuestion = () => {
+    if (selectedQuestionIndex > 0) {
+      handleSelectQuestion(selectedQuestionIndex - 1);
+    }
+  };
+
+  const optionLetters = ["A", "B", "C", "D", "E", "F"];
+
   return (
-    <>
-      {paper && selectedQuestion ? (
-        <Content style={{ padding: token.padding * 4 }}>
-          <Title level={2}>
-            {paper.subject} - {paper.year} - {paper.type}
-          </Title>
-          <Paragraph style={{ marginBottom: token.margin }}>{paper.description}</Paragraph>
+    <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "2rem 1.5rem 5rem 1.5rem" }}>
+      {/* Paper Header */}
+      <div
+        style={{
+          borderBottom: "1px solid var(--cds-border-subtle-01)",
+          paddingBottom: "1.5rem",
+          marginBottom: "2rem",
+        }}
+      >
+        <Breadcrumb noTrailingSlash style={{ marginBottom: "1rem" }}>
+          <BreadcrumbItem href="/">Home</BreadcrumbItem>
+          <BreadcrumbItem href="/papers">Papers</BreadcrumbItem>
+          <BreadcrumbItem isCurrentPage>
+            {paper.subject} {paper.year} ({paper.type})
+          </BreadcrumbItem>
+        </Breadcrumb>
 
-          <Row gutter={48} style={{ marginTop: token.marginLG }}>
-            {/* Question List (Left Side) */}
-            <Col span={6}>
-              <Title level={4}>Questions</Title>
-              <Menu
-                mode="vertical"
-                items={menuItems}
-                selectedKeys={[selectedQuestion.question_number.toString()]}
-                onSelect={handleMenuSelect}
-                style={{
-                  borderRight: 0,
-                  maxHeight: "60vh",
-                  overflow: "auto",
-                  borderRadius: token.borderRadius,
-                }}
-              />
-            </Col>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.75rem" }}>
+          <Tag type="blue" size="md">
+            {paper.subject}
+          </Tag>
+          <Tag type="cool-gray" size="md">
+            {paper.year}
+          </Tag>
+          <Tag type="purple" size="md">
+            {paper.type}
+          </Tag>
+          <Tag type="outline" size="md">
+            {paper.questions.length} Questions
+          </Tag>
+        </div>
 
-            {/* Question Content (Right Side) */}
-            <Col span={18}>
-              <Title level={4}>Q{selectedQuestion.question_number}.</Title>
-              <Card
-                variant="outlined"
-                style={{
-                  borderColor: token.colorPrimaryBorder,
-                  borderRadius: token.borderRadiusLG,
-                  fontFamily: "var(--font-answer, serif)",
-                }}
-              >
-                <div className="w-full flex flex-col">
-                  <div
-                    style={{
-                      fontSize: "18px",
-                    }}
-                  >
-                    <MarkdownRenderer content={selectedQuestion.question_text} />
-                    {selectedQuestion.question_images.length > 0 && (
-                      <div
-                        style={{
-                          marginTop: token.marginSM,
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                        }}
-                      >
-                        {selectedQuestion.question_images.map((image, index) => (
-                          <Image
-                            key={index}
-                            src={`data:image/jpg;base64,${image}`}
-                            alt={`Question Image ${index + 1}`}
-                            width={500}
-                            height={300}
-                            style={{
-                              width: "50%",
-                              maxWidth: "80%",
-                              maxHeight: "300px",
-                              objectFit: "contain",
-                              borderRadius: token.borderRadiusLG,
-                              marginBottom: token.marginSM,
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="w-fit self-end">
-                    <Button type="link" onClick={() => setShowAnswer(!showAnswer)}>
-                      {showAnswer ? "Hide Answer" : "Show Answer"}
-                    </Button>
-                  </div>
-                </div>
+        <h1
+          style={{
+            fontSize: "2rem",
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
+            color: "var(--cds-text-primary)",
+            margin: "0 0 0.5rem 0",
+          }}
+        >
+          {paper.subject} Examination — {paper.year}
+        </h1>
+        {paper.description && (
+          <p
+            style={{
+              fontSize: "1rem",
+              color: "var(--cds-text-secondary)",
+              margin: 0,
+            }}
+          >
+            {paper.description}
+          </p>
+        )}
+      </div>
 
-                <Divider style={{ margin: `${token.marginSM}px 0` }} />
-
-                {/* Options */}
-                {selectedQuestion.options && (
-                  <>
-                    {selectedQuestion.options.map((option, index) => {
-                      const isCorrect = option.is_correct;
-
-                      return (
-                        <div
-                          key={index}
-                          style={{
-                            marginBottom: token.marginSM,
-                            padding: token.paddingSM,
-                            borderRadius: token.borderRadiusLG,
-                            backgroundColor:
-                              showAnswer && isCorrect ? token.colorSuccessBg : "transparent",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Radio
-                            checked={showAnswer && isCorrect}
-                            key={selectedQuestion.question_number + index}
-                            value={index}
-                            style={{ marginRight: token.marginSM }}
-                          >
-                            <div
-                              style={{
-                                fontSize: "18px",
-                                fontFamily: "var(--font-answer, serif)",
-                                color: token.colorText,
-                              }}
-                            >
-                              <MarkdownRenderer content={option.option_text} />
-                              {option.option_image && (
-                                <Image
-                                  src={`data:image/jpg;base64,${option.option_image}`}
-                                  alt={`Option Image ${index + 1}`}
-                                  width={500}
-                                  height={300}
-                                  style={{
-                                    width: "50%",
-                                    maxWidth: "80%",
-                                    maxHeight: "300px",
-                                    objectFit: "contain",
-                                    borderRadius: token.borderRadiusLG,
-                                    marginTop: token.marginSM,
-                                  }}
-                                />
-                              )}
-                            </div>
-                          </Radio>
-
-                          {showAnswer && isCorrect && (
-                            <CheckOutlined
-                              style={{
-                                marginLeft: "auto",
-                                color: token.colorSuccess,
-                                fontSize: "20px",
-                              }}
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </>
-                )}
-              </Card>
-              <div style={{ marginTop: token.marginLG, textAlign: "right" }}>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    const currentIndex = paper.questions.findIndex(
-                      (q) => q.question_number === selectedQuestion.question_number
-                    );
-                    if (currentIndex < paper.questions.length - 1) {
-                      const nextQuestion = paper.questions[currentIndex + 1];
-                      setSelectedQuestion(nextQuestion);
-                      setShowAnswer(false);
-                    }
-                  }}
-                  disabled={
-                    paper.questions.findIndex(
-                      (q) => q.question_number === selectedQuestion.question_number
-                    ) ===
-                    paper.questions.length - 1
+      {/* Main Workspace Layout */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(280px, 340px) 1fr",
+          gap: "2rem",
+          alignItems: "start",
+        }}
+        className="paper-workspace"
+      >
+        {/* Left Side: Question List Navigation using Carbon ContainedList */}
+        <aside
+          style={{
+            maxHeight: "calc(100vh - 160px)",
+            overflowY: "auto",
+            position: "sticky",
+            top: "4rem",
+          }}
+          className="paper-sidebar"
+        >
+          <ContainedList
+            label="Questions"
+            kind="on-page"
+            size="md"
+            action={
+              <Tag size="sm" type="cool-gray">
+                {selectedQuestionIndex + 1} / {paper.questions.length}
+              </Tag>
+            }
+          >
+            {paper.questions.map((q, idx) => {
+              const isActive = idx === selectedQuestionIndex;
+              return (
+                <ContainedListItem
+                  key={q.question_number || idx}
+                  onClick={() => handleSelectQuestion(idx)}
+                  className={isActive ? "op-contained-list-item--active" : ""}
+                  action={
+                    q.marks ? (
+                      <Tag size="sm" type={isActive ? "blue" : "cool-gray"}>
+                        {q.marks}m
+                      </Tag>
+                    ) : undefined
                   }
                 >
-                  Next Question
-                </Button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        fontFamily: "var(--op-font-mono)",
+                        color: isActive ? "var(--cds-interactive)" : "var(--cds-text-primary)",
+                      }}
+                    >
+                      Q{q.question_number}
+                    </span>
+                    {q.subject_unit && (
+                      <span
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "var(--cds-text-secondary)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "130px",
+                        }}
+                      >
+                        {q.subject_unit}
+                      </span>
+                    )}
+                  </div>
+                </ContainedListItem>
+              );
+            })}
+          </ContainedList>
+        </aside>
+
+        {/* Right Side: Active Question & Solution Area */}
+        <main>
+          {selectedQuestion && (
+            <Tile
+              style={{
+                padding: "2.5rem",
+                border: "1px solid var(--cds-border-subtle-01)",
+                backgroundColor: "var(--cds-layer-01)",
+                marginBottom: "1.5rem",
+              }}
+            >
+              {/* Question Metadata Bar */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  borderBottom: "1px solid var(--cds-border-subtle-01)",
+                  paddingBottom: "1rem",
+                  marginBottom: "1.75rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <span
+                    style={{
+                      fontSize: "1.5rem",
+                      fontWeight: 700,
+                      fontFamily: "var(--op-font-mono)",
+                      color: "var(--cds-text-primary)",
+                    }}
+                  >
+                    Question {selectedQuestion.question_number}
+                  </span>
+                  {selectedQuestion.difficulty && (
+                    <Tag
+                      type={
+                        selectedQuestion.difficulty === "Easy"
+                          ? "green"
+                          : selectedQuestion.difficulty === "Medium"
+                            ? "warm-gray"
+                            : "red"
+                      }
+                      size="sm"
+                    >
+                      {selectedQuestion.difficulty}
+                    </Tag>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  {selectedQuestion.marks && (
+                    <span
+                      style={{
+                        fontSize: "0.875rem",
+                        fontFamily: "var(--op-font-mono)",
+                        color: "var(--cds-text-secondary)",
+                      }}
+                    >
+                      {selectedQuestion.marks} {selectedQuestion.marks > 1 ? "Marks" : "Mark"}
+                    </span>
+                  )}
+                  <Button
+                    kind={showAnswer ? "secondary" : "ghost"}
+                    size="sm"
+                    renderIcon={Help}
+                    onClick={() => setShowAnswer(!showAnswer)}
+                  >
+                    {showAnswer ? "Hide Solution" : "Show Solution"}
+                  </Button>
+                </div>
               </div>
-            </Col>
-          </Row>
-        </Content>
-      ) : (
-        <Loading />
-      )}
-    </>
+
+              {/* Question Body */}
+              <div style={{ marginBottom: "2rem" }}>
+                <MarkdownRenderer content={selectedQuestion.question_text} />
+
+                {/* Question Images */}
+                {selectedQuestion.question_images &&
+                  selectedQuestion.question_images.length > 0 && (
+                    <div
+                      style={{
+                        marginTop: "1.5rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "1rem",
+                        alignItems: "center",
+                      }}
+                    >
+                      {selectedQuestion.question_images.map((img, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            border: "1px solid var(--cds-border-subtle-01)",
+                            backgroundColor: "var(--cds-layer-02)",
+                            padding: "0.5rem",
+                            maxWidth: "100%",
+                          }}
+                        >
+                          <Image
+                            src={resolveImageSrc(img)}
+                            alt={`Question Figure ${idx + 1}`}
+                            width={650}
+                            height={350}
+                            style={{
+                              maxWidth: "100%",
+                              height: "auto",
+                              objectFit: "contain",
+                            }}
+                            unoptimized
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+
+              {/* Options Section */}
+              {selectedQuestion.options && selectedQuestion.options.length > 0 && (
+                <div style={{ marginTop: "2rem" }}>
+                  <div
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--cds-text-secondary)",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    Select an Answer
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    {selectedQuestion.options.map((opt, optIdx) => {
+                      const isSelected = selectedOptionIndex === optIdx;
+                      const isCorrect = opt.is_correct;
+                      const isTileSelected = isSelected || (showAnswer && isCorrect);
+                      const optionLabel = optionLetters[optIdx] || `${optIdx + 1}`;
+
+                      let tileClass = "op-option-tile";
+                      if (isSelected) tileClass += " selected";
+                      if (showAnswer && isCorrect) tileClass += " correct";
+                      if (showAnswer && isSelected && !isCorrect) tileClass += " incorrect";
+
+                      return (
+                        <SelectableTile
+                          key={optIdx}
+                          id={`option-${selectedQuestion.question_number}-${optIdx}`}
+                          selected={isTileSelected}
+                          className={tileClass}
+                          onClick={() => setSelectedOptionIndex(optIdx)}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "1rem",
+                              flex: 1,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontFamily: "var(--op-font-mono)",
+                                fontWeight: 700,
+                                fontSize: "1rem",
+                                color:
+                                  showAnswer && isCorrect
+                                    ? "var(--cds-support-success)"
+                                    : "var(--cds-text-primary)",
+                                minWidth: "24px",
+                              }}
+                            >
+                              ({optionLabel})
+                            </span>
+                            <div style={{ flex: 1 }}>
+                              <MarkdownRenderer content={opt.option_text} />
+                              {opt.option_image && (
+                                <div style={{ marginTop: "0.5rem" }}>
+                                  <Image
+                                    src={resolveImageSrc(opt.option_image)}
+                                    alt={`Option ${optionLabel}`}
+                                    width={400}
+                                    height={200}
+                                    style={{
+                                      maxWidth: "100%",
+                                      height: "auto",
+                                      objectFit: "contain",
+                                    }}
+                                    unoptimized
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </SelectableTile>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Solution Section when Revealed */}
+              {showAnswer && selectedQuestion.answer && (
+                <div
+                  style={{
+                    marginTop: "2.5rem",
+                    borderTop: "1px solid var(--cds-border-subtle-01)",
+                    paddingTop: "2rem",
+                  }}
+                >
+                  <Tile
+                    style={{
+                      padding: "1.75rem 2rem",
+                      backgroundColor: "var(--cds-layer-02)",
+                      border: "1px solid var(--cds-border-subtle-01)",
+                      borderLeft: "4px solid var(--cds-support-success, #24a148)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        borderBottom: "1px solid var(--cds-border-subtle-01)",
+                        paddingBottom: "1rem",
+                        marginBottom: "1.25rem",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <CheckmarkFilled
+                          size={20}
+                          style={{ color: "var(--cds-support-success, #24a148)" }}
+                        />
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "1.1rem",
+                            color: "var(--cds-text-primary)",
+                            letterSpacing: "-0.01em",
+                          }}
+                        >
+                          Verified Answer & Marking Scheme
+                        </span>
+                      </div>
+                      <Tag type="green" size="sm">
+                        Official Scheme
+                      </Tag>
+                    </div>
+
+                    <div className="solution-content">
+                      <MarkdownRenderer content={selectedQuestion.answer} />
+                    </div>
+                  </Tile>
+                </div>
+              )}
+            </Tile>
+          )}
+
+          {/* Navigation Controls */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "1.5rem",
+            }}
+          >
+            <Button
+              kind="secondary"
+              renderIcon={ArrowLeft}
+              disabled={selectedQuestionIndex === 0}
+              onClick={handlePrevQuestion}
+            >
+              Previous Question
+            </Button>
+
+            <span
+              style={{
+                fontFamily: "var(--op-font-mono)",
+                fontSize: "0.9rem",
+                color: "var(--cds-text-secondary)",
+              }}
+            >
+              Question {selectedQuestionIndex + 1} of {paper.questions.length}
+            </span>
+
+            <Button
+              kind="primary"
+              renderIcon={ArrowRight}
+              disabled={selectedQuestionIndex === paper.questions.length - 1}
+              onClick={handleNextQuestion}
+            >
+              Next Question
+            </Button>
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }

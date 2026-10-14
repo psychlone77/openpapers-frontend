@@ -1,0 +1,8 @@
+.next
+node_modules
+bun.lock
+package-lock.json
+build
+dist
+.vscode
+

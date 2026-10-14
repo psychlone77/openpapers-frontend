@@ -6,30 +6,32 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@ant-design/icons": "^5.6.1",
-    "@ant-design/nextjs-registry": "^1.0.2",
-    "@ant-design/v5-patch-for-react-19": "^1.0.3",
-    "@ariakit/react": "^0.4.16",
-    "antd": "^5.25.1",
+    "@carbon/icons-react": "^11.90.0",
+    "@carbon/react": "^1.118.0",
+    "@types/katex": "^0.16.8",
+    "katex": "^0.16.21",
     "next": "15.2.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0"
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "sass": "^1.105.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
-    "tailwindcss": "^4",
+    "prettier": "^3.9.10",
     "typescript": "^5"
   }
 }
