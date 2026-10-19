@@ -94,7 +94,7 @@ export default function GuidePage() {
             >
               <div
                 style={{
-                  fontFamily: "var(--op-font-mono)",
+                  fontFamily: "var(--op-font-sans)",
                   fontSize: "1.5rem",
                   fontWeight: 700,
                   color: "var(--cds-interactive)",

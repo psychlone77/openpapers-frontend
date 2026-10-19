@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@/styles/globals.scss";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import Providers from "@/app/providers";
 
 export const metadata: Metadata = {
@@ -21,10 +22,19 @@ export default function RootLayout({
       <body>
         <Providers>
           <div className="openpapers-grid-bg" aria-hidden="true" />
-          <Navbar />
-          <main id="main-content" style={{ minHeight: "calc(100vh - 48px)" }}>
-            {children}
-          </main>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
+            }}
+          >
+            <Navbar />
+            <main id="main-content" style={{ flex: "1 0 auto" }}>
+              {children}
+            </main>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>

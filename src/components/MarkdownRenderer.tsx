@@ -6,6 +6,7 @@ import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import "katex/contrib/mhchem";
+import { resolveImageSrc } from "@/lib/utils/imageUtils";
 
 interface MarkdownRendererProps {
   content: string;
@@ -44,7 +45,7 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
           img: ({ src, alt }) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={src}
+              src={resolveImageSrc(src)}
               alt={alt || "Diagram"}
               style={{
                 maxWidth: "100%",
@@ -143,7 +144,7 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
                     color: "var(--cds-text-primary, #161616)",
                     border: "1px solid var(--cds-border-subtle-01, #e0e0e0)",
                     padding: "2px 6px",
-                    fontFamily: "var(--op-font-mono)",
+                    fontFamily: "var(--op-font-sans)",
                     fontSize: "0.9em",
                   }}
                 >
@@ -160,7 +161,7 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
                   borderLeft: "4px solid var(--cds-interactive, #0f62fe)",
                   padding: "1rem",
                   overflowX: "auto",
-                  fontFamily: "var(--op-font-mono)",
+                  fontFamily: "var(--op-font-sans)",
                   fontSize: "0.9em",
                   lineHeight: 1.5,
                   borderRadius: 0,

@@ -84,17 +84,17 @@ Always consult [DESIGN.md](file:///home/nithika/Uni/Academic%20Projects/OpenPape
   - Feedback: `var(--cds-support-success)`, `var(--cds-support-error)`
 - Full dark mode switching is managed by `CarbonThemeProvider` across Carbon's `white`, `g10`, `g90`, and `g100` themes.
 
-### 3.4 Typography Hierarchy
+### 3.4 Typography Hierarchy & No-Monospace Rule
 
-- **UI / Headings / Buttons**: `IBM Plex Sans` (`var(--op-font-sans)`)
-- **Exam Questions & Solution Text**: `IBM Plex Serif` (`var(--op-font-serif)`)
-- **Formulas / Numbers / Codes / Units**: `IBM Plex Mono` (`var(--op-font-mono)`)
+- **UI / Headings / Buttons / Badges / Metadata / Codes**: `IBM Plex Sans` (`var(--op-font-sans)`)
+- **Exam Questions & Solution Reading Text**: `IBM Plex Serif` (`var(--op-font-serif)`)
+- **Strict Brand Rule — NO Monospace in UI**: **NEVER use any monospace font in the UI.** Monospace fonts (such as `IBM Plex Mono` or `Courier Prime`) are strictly prohibited across all UI components, buttons, badges, metadata, question codes, paper identifiers, and numerical parameters. All UI elements must use `IBM Plex Sans`.
 
 ---
 
 ## 4. Scientific Markdown & LaTeX Rendering
 
-- All question stems, option labels, and solutions must be rendered through [`MarkdownRenderer`](file:///home/nithika/Uni/Academic%20Projects/OpenPapers/openpapers-frontend/src/components/MarkdownRenderer.tsx).
+- All question stems, option labels, and solutions must be rendered through [`MarkdownRenderer`](src/components/MarkdownRenderer.tsx).
 - Supports:
   - **Inline Math**: `$E = mc^2$`
   - **Block Math**: `$$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$`
@@ -115,5 +115,19 @@ Always consult [DESIGN.md](file:///home/nithika/Uni/Academic%20Projects/OpenPape
 
 ## 6. Model Context Protocol (MCP) Integration
 
-- The **Carbon Design System MCP** is configured in [`.agents/mcp_config.json`](file:///home/nithika/Uni/Academic%20Projects/OpenPapers/openpapers-frontend/.agents/mcp_config.json).
+- The **Carbon Design System MCP** is configured in [`.agents/mcp_config.json`](.agents/mcp_config.json).
 - When available in your environment, query the Carbon MCP for official Carbon React component props, accessibility standards, and token usages.
+
+---
+
+## 7. Git Commit Guidelines
+
+- Commit messages must follow the format: `<action>: <simple summary>` followed by an optional blank line and detailed body.
+  - Examples of action prefixes: `feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`.
+  - Format:
+
+    ```plaintext
+    action: simple summary
+
+    optional detailed explanation of changes, rationale, or context
+    ```

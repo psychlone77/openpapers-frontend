@@ -20,7 +20,7 @@ export default function NotFound() {
     >
       <span
         style={{
-          fontFamily: "var(--op-font-mono)",
+          fontFamily: "var(--op-font-sans)",
           fontSize: "4rem",
           fontWeight: 700,
           color: "var(--cds-interactive)",

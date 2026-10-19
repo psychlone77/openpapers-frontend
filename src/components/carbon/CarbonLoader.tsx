@@ -18,7 +18,7 @@ export function CarbonLoader({ description = "Loading..." }: { description?: str
       <Loading withOverlay={false} description={description} />
       <span
         style={{
-          fontFamily: "var(--op-font-mono)",
+          fontFamily: "var(--op-font-sans)",
           color: "var(--cds-text-secondary)",
           fontSize: "0.875rem",
           letterSpacing: "0.05em",

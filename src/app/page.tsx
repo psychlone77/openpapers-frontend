@@ -1,55 +1,41 @@
-"use client";
-
 import React from "react";
-import { PaperSearchBox } from "@/components/PaperSearchBox";
-import { Tag } from "@/components/carbon";
+import { HeroSearchConsole } from "@/components/home/HeroSearchConsole";
+import { BrowseByExamSection } from "@/components/home/BrowseByExamSection";
+import { LatestPapersSection } from "@/components/home/LatestPapersSection";
+import { PopularTopicsSection } from "@/components/home/PopularTopicsSection";
+import { CommunityCtaSection } from "@/components/home/CommunityCtaSection";
+import { fetchExams, fetchSubjects, fetchRecentPapers } from "@/lib/api/curriculum";
 
-export default function Home() {
+export const metadata = {
+  title: "OpenPapers | Academic Examination Archive Portal",
+  description:
+    "Search past examination papers, official marking rubrics, and community-verified solutions across secondary and university exams.",
+};
+
+export default async function Home() {
+  // Fetch curriculum and recent activity data in parallel from backend
+  const [exams, subjects, recentPapers] = await Promise.all([
+    fetchExams(),
+    fetchSubjects(),
+    fetchRecentPapers(),
+  ]);
+
   return (
-    <div
-      style={{
-        maxWidth: "1100px",
-        margin: "0 auto",
-        padding: "4rem 1.5rem 6rem 1.5rem",
-        textAlign: "center",
-      }}
-    >
-      <div style={{ marginBottom: "1rem" }}>
-        <Tag type="blue" size="md">
-          Open Access Examination Archive
-        </Tag>
-        <Tag type="teal" size="md">
-          Sri Lankan A-Levels & Beyond
-        </Tag>
-      </div>
+    <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
+      {/* 1. Hero & 4-Dropdown Search Console */}
+      <HeroSearchConsole exams={exams} subjects={subjects} />
 
-      <h1
-        style={{
-          fontSize: "2.75rem",
-          fontWeight: 700,
-          letterSpacing: "-0.03em",
-          lineHeight: 1.2,
-          color: "var(--cds-text-primary)",
-          marginBottom: "1rem",
-        }}
-      >
-        Practice Past Papers with Precision
-      </h1>
+      {/* 2. Directory: Browse by Exam */}
+      <BrowseByExamSection exams={exams} />
 
-      <p
-        style={{
-          fontSize: "1.25rem",
-          color: "var(--cds-text-secondary)",
-          maxWidth: "680px",
-          margin: "0 auto 3rem auto",
-          lineHeight: 1.6,
-        }}
-      >
-        Browse comprehensive past examination papers, step through questions with full LaTeX
-        equations, and practice with immediate solution verification.
-      </p>
+      {/* 3. Community Activity: Latest Papers & Answers */}
+      <LatestPapersSection recentPapers={recentPapers} />
 
-      <PaperSearchBox />
+      {/* 4. Practice by Topic: Popular Topics & Practice Questions */}
+      <PopularTopicsSection />
+
+      {/* 5. Community Contribution CTA */}
+      <CommunityCtaSection />
     </div>
   );
 }
