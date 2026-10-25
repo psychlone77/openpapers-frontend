@@ -59,90 +59,8 @@ export function LatestPapersSection({ recentPapers }: LatestPapersSectionProps) 
     };
   });
 
-  // Stitch V2 sample items for comprehensive showcase
-  const defaultItems: ActivityItem[] = [
-    {
-      id: "math-2024",
-      votes: 24,
-      solutionsText: "5 solutions",
-      views: "1.8k views",
-      title: "2024 A/L Combined Mathematics Paper II — Full Worked Solutions (Part A & Part B)",
-      description:
-        "Step-by-step breakdown covering complex numbers, integration by parts, relative velocity, and projectile motion. Verified against the official marking criteria.",
-      examTag: "A/L 2024",
-      subjectTag: "Combined Mathematics",
-      typeTag: "Worked Solutions",
-      formatTag: "PDF + Step-by-Step",
-      timeAgo: "answered 3 hours ago",
-      authorInitials: "KP",
-      authorName: "Kavindu_Perera",
-      reputation: "3,420",
-      href: "/papers",
-      category: "solutions",
-    },
-    {
-      id: "physics-ial-2023",
-      votes: 38,
-      solutionsText: "Official Scheme",
-      isOfficial: true,
-      views: "2.4k views",
-      title:
-        "2023 Cambridge IAL Physics Unit 4 (WPH14) — Question Paper & Official Examiner Rubric",
-      description:
-        "Includes Section A (10 MCQs) and Section B structured inquiries on electric fields, magnetic deflection, particle accelerators, and capacitance equations.",
-      examTag: "Cambridge IAL",
-      subjectTag: "Physics Unit 4",
-      typeTag: "Marking Scheme",
-      formatTag: "Official Marking Guide",
-      timeAgo: "uploaded yesterday",
-      authorInitials: "SJ",
-      authorName: "Dr. Sarah_J",
-      reputation: "12.8k",
-      href: "/papers",
-      category: "schemes",
-    },
-    {
-      id: "ol-science-2023",
-      votes: 19,
-      solutionsText: "3 solutions",
-      views: "980 views",
-      title: "2023 O/L Science Paper I & II with Model Answers and Point-by-Point Marking Guide",
-      description:
-        "Covers Biology (heredity, photosynthesis), Chemistry (acids, bases, metals reactivity series), and Physics (sound, light, domestic electricity).",
-      examTag: "O/L 2023",
-      subjectTag: "Science",
-      typeTag: "Model Answers",
-      formatTag: "Sinhala + English",
-      timeAgo: "added 2 days ago",
-      authorInitials: "NS",
-      authorName: "Nimna_Silva",
-      reputation: "1.4k",
-      href: "/papers",
-      category: "solutions",
-    },
-    {
-      id: "cs-midterm-2024",
-      votes: 15,
-      solutionsText: "1 solution",
-      views: "760 views",
-      title: "University CS201 Data Structures & Algorithms 2024 Midterm Exam Paper",
-      description:
-        "Mid-semester evaluation on balanced AVL trees, graph traversal (BFS/DFS), amortized runtime analysis, and dynamic programming memoization.",
-      examTag: "University",
-      subjectTag: "Computer Science",
-      typeTag: "Midterm 2024",
-      formatTag: "Verified by Faculty TA",
-      timeAgo: "added 4 days ago",
-      authorInitials: "MG",
-      authorName: "MathGuru99",
-      reputation: "850",
-      href: "/papers",
-      category: "review",
-    },
-  ];
-
-  // Prioritize real backend items when available
-  const itemsToDisplay = backendItems.length > 0 ? backendItems : defaultItems;
+  // Real backend activity items
+  const itemsToDisplay = backendItems;
 
   const filteredItems = itemsToDisplay.filter((item) => {
     if (activeFilter === "all") return true;
@@ -273,194 +191,234 @@ export function LatestPapersSection({ recentPapers }: LatestPapersSectionProps) 
             flexDirection: "column",
           }}
         >
-          {filteredItems.map((item, index) => (
-            <div
-              key={item.id}
-              style={{
-                padding: "1.5rem",
-                borderBottom:
-                  index < filteredItems.length - 1
-                    ? "1px solid var(--cds-border-subtle-01)"
-                    : "none",
-                display: "grid",
-                gridTemplateColumns: "140px 1fr auto",
-                gap: "1.5rem",
-                alignItems: "start",
-                transition: "background-color 120ms ease",
-              }}
-              className="op-activity-row"
-            >
-              {/* Left Column: Metric Badges (Desktop) */}
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item, index) => (
               <div
+                key={item.id}
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: "0.35rem",
-                  fontFamily: "var(--op-font-sans)",
-                  fontSize: "0.75rem",
+                  padding: "1.5rem",
+                  borderBottom:
+                    index < filteredItems.length - 1
+                      ? "1px solid var(--cds-border-subtle-01)"
+                      : "none",
+                  display: "grid",
+                  gridTemplateColumns: "140px 1fr auto",
+                  gap: "1.5rem",
+                  alignItems: "start",
+                  transition: "background-color 120ms ease",
                 }}
-                className="op-activity-metrics"
+                className="op-activity-row"
               >
-                <span
-                  style={{
-                    backgroundColor: "var(--cds-layer-01)",
-                    border: "1px solid var(--cds-border-subtle-01)",
-                    padding: "0.25rem 0.5rem",
-                    fontWeight: 700,
-                    color: "var(--cds-text-primary)",
-                    width: "100%",
-                    textAlign: "right",
-                  }}
-                >
-                  {item.votes} votes
-                </span>
-                <span
-                  style={{
-                    backgroundColor: item.isOfficial
-                      ? "rgba(15, 98, 254, 0.1)"
-                      : "var(--cds-layer-01)",
-                    border: item.isOfficial
-                      ? "1px solid var(--cds-interactive)"
-                      : "1px solid var(--cds-border-subtle-01)",
-                    color: item.isOfficial ? "var(--cds-interactive)" : "var(--cds-text-secondary)",
-                    padding: "0.25rem 0.5rem",
-                    fontWeight: 600,
-                    width: "100%",
-                    textAlign: "right",
-                  }}
-                >
-                  {item.solutionsText}
-                </span>
-                <span
-                  style={{
-                    color: "var(--cds-text-helper)",
-                    fontSize: "0.6875rem",
-                    paddingRight: "0.25rem",
-                  }}
-                >
-                  {item.views}
-                </span>
-              </div>
-
-              {/* Middle Column: Title, Description, Tags */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                <Link
-                  href={item.href}
-                  style={{
-                    fontSize: "1.0625rem",
-                    fontWeight: 600,
-                    color: "var(--cds-interactive)",
-                    textDecoration: "none",
-                    lineHeight: 1.35,
-                    fontFamily: "var(--op-font-sans)",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
-                  onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
-                >
-                  {item.title}
-                </Link>
-
-                <p
-                  style={{
-                    fontFamily: "var(--op-font-serif)",
-                    fontSize: "0.875rem",
-                    color: "var(--cds-text-secondary)",
-                    lineHeight: 1.5,
-                    margin: 0,
-                  }}
-                >
-                  {item.description}
-                </p>
-
-                {/* Metadata Tags */}
+                {/* Left Column: Metric Badges (Desktop) */}
                 <div
                   style={{
                     display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    flexWrap: "wrap",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  <Tag type="blue" size="sm" style={{ margin: 0, fontWeight: 600 }}>
-                    {item.examTag}
-                  </Tag>
-                  <Tag type="cool-gray" size="sm" style={{ margin: 0 }}>
-                    {item.subjectTag}
-                  </Tag>
-                  <Tag type="outline" size="sm" style={{ margin: 0 }}>
-                    {item.typeTag}
-                  </Tag>
-                  <span
-                    style={{
-                      fontSize: "0.75rem",
-                      fontFamily: "var(--op-font-sans)",
-                      color: "var(--cds-text-helper)",
-                    }}
-                  >
-                    {item.formatTag}
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Column: Author Info & Timestamp */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: "0.35rem",
-                  fontSize: "0.75rem",
-                  minWidth: "140px",
-                }}
-                className="op-activity-author"
-              >
-                <span style={{ color: "var(--cds-text-helper)", fontSize: "0.6875rem" }}>
-                  {item.timeAgo}
-                </span>
-
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span
-                    style={{
-                      width: "24px",
-                      height: "24px",
-                      backgroundColor: "var(--cds-layer-02)",
-                      border: "1px solid var(--cds-border-subtle-01)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "0.6875rem",
-                      fontWeight: 700,
-                      color: "var(--cds-text-primary)",
-                      fontFamily: "var(--op-font-sans)",
-                    }}
-                  >
-                    {item.authorInitials}
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color: "var(--cds-text-primary)",
-                      fontSize: "0.8125rem",
-                    }}
-                  >
-                    {item.authorName}
-                  </span>
-                </div>
-
-                <span
-                  style={{
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: "0.35rem",
                     fontFamily: "var(--op-font-sans)",
-                    color: "var(--cds-text-helper)",
                     fontSize: "0.75rem",
                   }}
+                  className="op-activity-metrics"
                 >
-                  Rep: {item.reputation}
-                </span>
+                  <span
+                    style={{
+                      backgroundColor: "var(--cds-layer-01)",
+                      border: "1px solid var(--cds-border-subtle-01)",
+                      padding: "0.25rem 0.5rem",
+                      fontWeight: 700,
+                      color: "var(--cds-text-primary)",
+                      width: "100%",
+                      textAlign: "right",
+                    }}
+                  >
+                    {item.votes} votes
+                  </span>
+                  <span
+                    style={{
+                      backgroundColor: item.isOfficial
+                        ? "rgba(15, 98, 254, 0.1)"
+                        : "var(--cds-layer-01)",
+                      border: item.isOfficial
+                        ? "1px solid var(--cds-interactive)"
+                        : "1px solid var(--cds-border-subtle-01)",
+                      color: item.isOfficial
+                        ? "var(--cds-interactive)"
+                        : "var(--cds-text-secondary)",
+                      padding: "0.25rem 0.5rem",
+                      fontWeight: 600,
+                      width: "100%",
+                      textAlign: "right",
+                    }}
+                  >
+                    {item.solutionsText}
+                  </span>
+                  <span
+                    style={{
+                      color: "var(--cds-text-helper)",
+                      fontSize: "0.6875rem",
+                      paddingRight: "0.25rem",
+                    }}
+                  >
+                    {item.views}
+                  </span>
+                </div>
+
+                {/* Middle Column: Title, Description, Tags */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  <Link
+                    href={item.href}
+                    style={{
+                      fontSize: "1.0625rem",
+                      fontWeight: 600,
+                      color: "var(--cds-interactive)",
+                      textDecoration: "none",
+                      lineHeight: 1.35,
+                      fontFamily: "var(--op-font-sans)",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
+                    onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
+                  >
+                    {item.title}
+                  </Link>
+
+                  <p
+                    style={{
+                      fontFamily: "var(--op-font-serif)",
+                      fontSize: "0.875rem",
+                      color: "var(--cds-text-secondary)",
+                      lineHeight: 1.5,
+                      margin: 0,
+                    }}
+                  >
+                    {item.description}
+                  </p>
+
+                  {/* Metadata Tags */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      flexWrap: "wrap",
+                      marginTop: "0.25rem",
+                    }}
+                  >
+                    <Tag type="blue" size="sm" style={{ margin: 0, fontWeight: 600 }}>
+                      {item.examTag}
+                    </Tag>
+                    <Tag type="cool-gray" size="sm" style={{ margin: 0 }}>
+                      {item.subjectTag}
+                    </Tag>
+                    <Tag type="outline" size="sm" style={{ margin: 0 }}>
+                      {item.typeTag}
+                    </Tag>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        fontFamily: "var(--op-font-sans)",
+                        color: "var(--cds-text-helper)",
+                      }}
+                    >
+                      {item.formatTag}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right Column: Author Info & Timestamp */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: "0.35rem",
+                    fontSize: "0.75rem",
+                    minWidth: "140px",
+                  }}
+                  className="op-activity-author"
+                >
+                  <span style={{ color: "var(--cds-text-helper)", fontSize: "0.6875rem" }}>
+                    {item.timeAgo}
+                  </span>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        backgroundColor: "var(--cds-layer-02)",
+                        border: "1px solid var(--cds-border-subtle-01)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "0.6875rem",
+                        fontWeight: 700,
+                        color: "var(--cds-text-primary)",
+                        fontFamily: "var(--op-font-sans)",
+                      }}
+                    >
+                      {item.authorInitials}
+                    </span>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color: "var(--cds-text-primary)",
+                        fontSize: "0.8125rem",
+                      }}
+                    >
+                      {item.authorName}
+                    </span>
+                  </div>
+
+                  <span
+                    style={{
+                      fontFamily: "var(--op-font-sans)",
+                      color: "var(--cds-text-helper)",
+                      fontSize: "0.75rem",
+                    }}
+                  >
+                    Rep: {item.reputation}
+                  </span>
+                </div>
               </div>
+            ))
+          ) : (
+            <div
+              style={{
+                padding: "3.5rem 1.5rem",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.75rem",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "1.125rem",
+                  fontWeight: 600,
+                  color: "var(--cds-text-primary)",
+                  margin: 0,
+                  fontFamily: "var(--op-font-sans)",
+                }}
+              >
+                No Recent Activity Found
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.875rem",
+                  color: "var(--cds-text-secondary)",
+                  margin: 0,
+                  maxWidth: "460px",
+                  fontFamily: "var(--op-font-serif)",
+                }}
+              >
+                There are currently no papers matching this category in the archive. Check back soon
+                or browse all examination papers above.
+              </p>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Bottom Pagination Bar */}
@@ -478,50 +436,48 @@ export function LatestPapersSection({ recentPapers }: LatestPapersSectionProps) 
             gap: "0.75rem",
           }}
         >
-          <span>Showing 1–{filteredItems.length} of 280 recent items</span>
+          <span>
+            {filteredItems.length > 0
+              ? `Showing 1–${filteredItems.length} of ${backendItems.length} recent items`
+              : "0 items available"}
+          </span>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <Button
-              kind="ghost"
-              size="sm"
-              hasIconOnly
-              renderIcon={ArrowLeft}
-              iconDescription="Previous"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            />
-            {[1, 2, 3].map((page) => (
+          {filteredItems.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+              <Button
+                kind="ghost"
+                size="sm"
+                hasIconOnly
+                renderIcon={ArrowLeft}
+                iconDescription="Previous"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              />
               <button
-                key={page}
                 type="button"
-                onClick={() => setCurrentPage(page)}
                 style={{
                   width: "28px",
                   height: "28px",
-                  border:
-                    currentPage === page
-                      ? "1px solid var(--cds-interactive)"
-                      : "1px solid var(--cds-border-subtle-01)",
-                  backgroundColor:
-                    currentPage === page ? "var(--cds-interactive)" : "var(--cds-background)",
-                  color: currentPage === page ? "#ffffff" : "var(--cds-text-primary)",
+                  border: "1px solid var(--cds-interactive)",
+                  backgroundColor: "var(--cds-interactive)",
+                  color: "#ffffff",
                   fontWeight: 700,
                   fontSize: "0.75rem",
                   cursor: "pointer",
                 }}
               >
-                {page}
+                1
               </button>
-            ))}
-            <Button
-              kind="ghost"
-              size="sm"
-              hasIconOnly
-              renderIcon={ChevronRight}
-              iconDescription="Next"
-              onClick={() => setCurrentPage((p) => p + 1)}
-            />
-          </div>
+              <Button
+                kind="ghost"
+                size="sm"
+                hasIconOnly
+                renderIcon={ChevronRight}
+                iconDescription="Next"
+                disabled
+              />
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,19 +1,30 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PaperSchema, Question } from "@/lib/types/paperSchema";
+import type { ExplanationResponse } from "@/lib/types/api";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { getLocalizedQuestionContent } from "@/lib/adapters/paperAdapter";
 import { resolveImageSrc } from "@/lib/utils/imageUtils";
+import { fetchQuestionExplanations, submitQuestionExplanation } from "@/lib/api/explanations";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Tag,
+  Button,
+  Modal,
+  TextArea,
+  Select,
+  SelectItem,
+  ContentSwitcher,
+  Switch,
+  InlineNotification,
   ArrowRight,
   ArrowLeft,
   Checkmark,
   CheckmarkFilled,
-  Warning,
   Catalog,
   Share,
   Bookmark,
@@ -27,6 +38,10 @@ import {
   List,
   Close,
   DocumentDownload,
+  ThumbsUp,
+  ThumbsDown,
+  Pending,
+  Add,
 } from "@/components/carbon";
 
 export interface PaperClientProps {
@@ -36,6 +51,9 @@ export interface PaperClientProps {
 type ViewMode = "split" | "question" | "scheme";
 
 export default function PaperClient({ paper }: PaperClientProps) {
+  const router = useRouter();
+  const { accessToken, isAuthenticated } = useAuth();
+
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
   const [flaggedQuestions, setFlaggedQuestions] = useState<Record<number, boolean>>({});
@@ -49,8 +67,29 @@ export default function PaperClient({ paper }: PaperClientProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Live question explanations state
+  const [liveExplanations, setLiveExplanations] = useState<ExplanationResponse[]>([]);
+  const [isLoadingExplanations, setIsLoadingExplanations] = useState(false);
+
+  // Contribute explanation modal state
+  const [isContributeOpen, setIsContributeOpen] = useState(false);
+  const [contributeLang, setContributeLang] = useState<"en" | "si" | "ta">("en");
+  const [contributeContent, setContributeContent] = useState("");
+  const [contributeTabIndex, setContributeTabIndex] = useState(0);
+  const [isSubmittingExplanation, setIsSubmittingExplanation] = useState(false);
+  const [contributeError, setContributeError] = useState<string | null>(null);
+  const [contributeSuccessMsg, setContributeSuccessMsg] = useState<string | null>(null);
+
   const quickScrollerRef = useRef<HTMLDivElement>(null);
-  const selectedQuestion: Question | undefined = paper.questions[selectedQuestionIndex];
+
+  const handleLanguageChange = (langCode: string) => {
+    setActiveLang(langCode);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", langCode);
+      window.history.replaceState(null, "", url.toString());
+    }
+  };
 
   // Keep jump input in sync with current question index
   useEffect(() => {
@@ -73,31 +112,129 @@ export default function PaperClient({ paper }: PaperClientProps) {
     }
   }, [selectedQuestionIndex]);
 
-  // Resolve localized question content
-  const localized = useMemo(() => {
-    if (!selectedQuestion) {
+  // Resolve localized questions across the entire paper dynamically based on active language
+  const localizedQuestions = useMemo(() => {
+    return paper.questions.map((q) => {
+      let localizedUnit = q.subject_unit;
+      if (q.raw_units && q.raw_units.length > 0) {
+        const u = q.raw_units[0];
+        if (activeLang === "si" && u.name_si) localizedUnit = u.name_si;
+        else if (activeLang === "ta" && u.name_ta) localizedUnit = u.name_ta;
+        else localizedUnit = u.name_en || localizedUnit;
+      }
+
+      if (q.raw_localizations && q.raw_localizations.length > 0) {
+        const loc = getLocalizedQuestionContent(q, activeLang);
+        return {
+          ...q,
+          question_text: loc.question_text || q.question_text,
+          question_images:
+            loc.question_images && loc.question_images.length > 0
+              ? loc.question_images
+              : q.question_images,
+          options: loc.options || q.options,
+          subject_unit: localizedUnit,
+        };
+      }
       return {
-        question_text: "",
-        question_images: [] as string[],
-        options: null,
+        ...q,
+        subject_unit: localizedUnit,
       };
+    });
+  }, [paper.questions, activeLang]);
+
+  const selectedQuestion: Question | undefined = localizedQuestions[selectedQuestionIndex];
+
+  const loadQuestionExplanations = useCallback(
+    async (questionId?: string) => {
+      if (!questionId) {
+        setLiveExplanations([]);
+        return;
+      }
+      setIsLoadingExplanations(true);
+      try {
+        const list = await fetchQuestionExplanations(questionId, accessToken);
+        setLiveExplanations(list);
+      } catch {
+        setLiveExplanations([]);
+      } finally {
+        setIsLoadingExplanations(false);
+      }
+    },
+    [accessToken]
+  );
+
+  useEffect(() => {
+    setContributeSuccessMsg(null);
+    loadQuestionExplanations(selectedQuestion?.id);
+  }, [selectedQuestion?.id, loadQuestionExplanations]);
+
+  const handleOpenContribute = () => {
+    if (!isAuthenticated || !accessToken) {
+      const currentPath =
+        typeof window !== "undefined"
+          ? `${window.location.pathname}${window.location.search}`
+          : "/papers";
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      return;
     }
-    if (selectedQuestion.raw_localizations && selectedQuestion.raw_localizations.length > 0) {
-      return getLocalizedQuestionContent(selectedQuestion, activeLang);
+
+    const defaultLang =
+      activeLang === "si" || activeLang === "ta" ? (activeLang as "si" | "ta") : "en";
+    setContributeLang(defaultLang);
+    setContributeError(null);
+    setContributeTabIndex(0);
+    setIsContributeOpen(true);
+  };
+
+  const handleSubmitExplanation = async () => {
+    if (!selectedQuestion?.id || !accessToken) {
+      setContributeError(
+        "This question does not have a live backend identifier for explanation submission."
+      );
+      return;
     }
-    return {
-      question_text: selectedQuestion.question_text,
-      question_images: selectedQuestion.question_images,
-      options: selectedQuestion.options,
-    };
-  }, [selectedQuestion, activeLang]);
+
+    const trimmed = contributeContent.trim();
+    if (trimmed.length < 10) {
+      setContributeError("Explanation content must be at least 10 characters long.");
+      return;
+    }
+
+    setIsSubmittingExplanation(true);
+    setContributeError(null);
+
+    try {
+      await submitQuestionExplanation(
+        selectedQuestion.id,
+        {
+          language_code: contributeLang,
+          content_text: trimmed,
+        },
+        accessToken
+      );
+
+      setIsContributeOpen(false);
+      setContributeContent("");
+      setIsSolutionExpanded(true);
+      setContributeSuccessMsg(
+        "Your explanation has been submitted to the moderation queue (PENDING) and is pinned below."
+      );
+      await loadQuestionExplanations(selectedQuestion.id);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to submit explanation.";
+      setContributeError(msg);
+    } finally {
+      setIsSubmittingExplanation(false);
+    }
+  };
 
   // Filtered question list for Question Navigator
   const filteredQuestions = useMemo(() => {
     const qLower = searchQuery.toLowerCase().trim();
-    if (!qLower) return paper.questions;
+    if (!qLower) return localizedQuestions;
 
-    return paper.questions.filter((q) => {
+    return localizedQuestions.filter((q) => {
       const qNumStr = `q${q.question_number} ${q.question_number}`;
       const unit = (q.subject_unit || "").toLowerCase();
       const text = (q.question_text || "").toLowerCase();
@@ -109,7 +246,7 @@ export default function PaperClient({ paper }: PaperClientProps) {
         diff.includes(qLower)
       );
     });
-  }, [paper.questions, searchQuery]);
+  }, [localizedQuestions, searchQuery]);
 
   const totalMarks = useMemo(() => {
     const sum = paper.questions.reduce((acc, q) => acc + (q.marks || 1), 0);
@@ -606,7 +743,7 @@ export default function PaperClient({ paper }: PaperClientProps) {
                   <button
                     key={l}
                     type="button"
-                    onClick={() => setActiveLang(l)}
+                    onClick={() => handleLanguageChange(l)}
                     style={{
                       height: "100%",
                       padding: "0 0.5rem",
@@ -964,9 +1101,16 @@ export default function PaperClient({ paper }: PaperClientProps) {
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
                           maxWidth: "200px",
+                          fontFamily: "var(--op-font-sans)",
                         }}
+                        title={q.question_text || q.subject_unit || ""}
                       >
-                        {q.subject_unit || q.question_text.slice(0, 36) || "Examination Item"}
+                        {q.question_text
+                          ? q.question_text
+                              .replace(/[#*`$\\]/g, "")
+                              .trim()
+                              .slice(0, 48)
+                          : q.subject_unit || "Examination Item"}
                       </span>
                       <span
                         style={{
@@ -1113,16 +1257,11 @@ export default function PaperClient({ paper }: PaperClientProps) {
                   marginBottom: "1.75rem",
                 }}
               >
-                <MarkdownRenderer
-                  content={localized.question_text || selectedQuestion.question_text}
-                />
+                <MarkdownRenderer content={selectedQuestion.question_text} />
               </article>
 
               {/* Scientific Vector Diagram / Attached Images Container */}
-              {(localized.question_images && localized.question_images.length > 0
-                ? localized.question_images
-                : selectedQuestion.question_images
-              )?.length > 0 && (
+              {selectedQuestion.question_images && selectedQuestion.question_images.length > 0 && (
                 <div
                   style={{
                     border: "1px solid var(--cds-border-subtle-01)",
@@ -1142,10 +1281,7 @@ export default function PaperClient({ paper }: PaperClientProps) {
                       padding: "0.75rem",
                     }}
                   >
-                    {(localized.question_images && localized.question_images.length > 0
-                      ? localized.question_images
-                      : selectedQuestion.question_images
-                    ).map((img, idx) => (
+                    {selectedQuestion.question_images.map((img, idx) => (
                       <div key={idx} style={{ maxWidth: "100%", margin: "0 auto" }}>
                         <Image
                           src={resolveImageSrc(img)}
@@ -1178,8 +1314,8 @@ export default function PaperClient({ paper }: PaperClientProps) {
               )}
 
               {/* MCQ Options Selector (Strict 0px borders, No-Monospace, Mobile-adaptive) */}
-              {(localized.options || selectedQuestion.options) &&
-                (localized.options || selectedQuestion.options)!.length > 0 &&
+              {selectedQuestion.options &&
+                selectedQuestion.options.length > 0 &&
                 viewMode !== "scheme" && (
                   <fieldset
                     style={{
@@ -1205,7 +1341,7 @@ export default function PaperClient({ paper }: PaperClientProps) {
                       Multiple Choice Options:
                     </legend>
 
-                    {(localized.options || selectedQuestion.options)!.map((opt, optIdx) => {
+                    {selectedQuestion.options.map((opt, optIdx) => {
                       const isSelected = currentAnsweredOption === optIdx;
                       const isCorrect = opt.is_correct;
                       const letter = opt.key || optionLetters[optIdx] || `${optIdx + 1}`;
@@ -1224,13 +1360,9 @@ export default function PaperClient({ paper }: PaperClientProps) {
                           <div className="op-option-letter">{letter}</div>
 
                           <div
+                            className="op-option-content"
                             style={{
-                              flex: "1 1 0%",
-                              fontSize: `${0.9375 * (zoom / 100)}rem`,
-                              fontFamily: "var(--op-font-sans)",
-                              color: "var(--cds-text-primary)",
-                              fontWeight: isSelected ? 600 : 400,
-                              minWidth: "180px",
+                              fontSize: `${1 * (zoom / 100)}rem`,
                             }}
                           >
                             <MarkdownRenderer content={opt.option_text} />
@@ -1261,7 +1393,7 @@ export default function PaperClient({ paper }: PaperClientProps) {
                 )}
 
               {/* ========================================================== */}
-              {/* PRACTICE MODE: VERIFIED SOLUTION & MARK SCHEME ACCORDION    */}
+              {/* PRACTICE MODE: VERIFIED SOLUTION & LIVE EXPLANATIONS       */}
               {/* ========================================================== */}
               {isSolutionVisible && (
                 <section
@@ -1304,7 +1436,7 @@ export default function PaperClient({ paper }: PaperClientProps) {
                           fontFamily: "var(--op-font-sans)",
                         }}
                       >
-                        Verified Solution & Official Marking Scheme Breakdown
+                        Official Answer & Community Explanations ({liveExplanations.length})
                       </span>
                     </div>
 
@@ -1336,12 +1468,22 @@ export default function PaperClient({ paper }: PaperClientProps) {
                         gap: "1rem",
                       }}
                     >
-                      {/* Step 01: Core Formulation & Solution Derivation */}
+                      {contributeSuccessMsg && (
+                        <InlineNotification
+                          kind="success"
+                          title="Explanation Submitted"
+                          subtitle={contributeSuccessMsg}
+                          lowContrast
+                          onCloseButtonClick={() => setContributeSuccessMsg(null)}
+                        />
+                      )}
+
+                      {/* Official Answer Summary Header */}
                       <div
                         style={{
                           padding: "1rem",
                           backgroundColor: "var(--cds-layer-01)",
-                          borderLeft: "3px solid var(--cds-interactive, #0f62fe)",
+                          borderLeft: "3px solid var(--cds-support-success, #24a148)",
                           border: "1px solid var(--cds-border-subtle-01)",
                           borderLeftWidth: "3px",
                         }}
@@ -1349,9 +1491,11 @@ export default function PaperClient({ paper }: PaperClientProps) {
                         <div
                           style={{
                             display: "flex",
+                            flexWrap: "wrap",
                             alignItems: "center",
                             justifyContent: "space-between",
-                            marginBottom: "0.75rem",
+                            gap: "0.5rem",
+                            marginBottom: "0.5rem",
                           }}
                         >
                           <span
@@ -1359,194 +1503,321 @@ export default function PaperClient({ paper }: PaperClientProps) {
                               fontSize: "0.8125rem",
                               fontWeight: 700,
                               textTransform: "uppercase",
-                              color: "var(--cds-interactive, #0f62fe)",
+                              color: "var(--cds-support-success, #24a148)",
                               fontFamily: "var(--op-font-sans)",
                             }}
                           >
-                            Step 01: Comprehensive Solution & Derivation
+                            Official Marking Key
                           </span>
-                          <span
-                            style={{
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              fontFamily: "var(--op-font-sans)",
-                              backgroundColor: "var(--cds-text-primary)",
-                              color: "var(--cds-text-on-color, #ffffff)",
-                              padding: "0.125rem 0.5rem",
-                            }}
-                          >
-                            [{selectedQuestion.marks} Mark{selectedQuestion.marks > 1 ? "s" : ""}]
-                          </span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <span
+                              style={{
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                fontFamily: "var(--op-font-sans)",
+                                backgroundColor: "var(--cds-text-primary)",
+                                color: "var(--cds-text-on-color, #ffffff)",
+                                padding: "0.125rem 0.5rem",
+                              }}
+                            >
+                              [{selectedQuestion.marks} Mark
+                              {selectedQuestion.marks > 1 ? "s" : ""}]
+                            </span>
+                            {selectedQuestion.id && (
+                              <Button
+                                size="sm"
+                                kind="tertiary"
+                                renderIcon={Add}
+                                onClick={handleOpenContribute}
+                              >
+                                Contribute Explanation
+                              </Button>
+                            )}
+                          </div>
                         </div>
 
                         <div className="solution-content">
-                          {selectedQuestion.answer ? (
+                          {selectedQuestion.correct_answer_keys &&
+                          selectedQuestion.correct_answer_keys.length > 0 ? (
+                            <p style={{ margin: 0, fontFamily: "var(--op-font-sans)" }}>
+                              <strong>Correct Option:</strong>{" "}
+                              {selectedQuestion.correct_answer_keys.join(", ")}
+                            </p>
+                          ) : selectedQuestion.answer ? (
                             <MarkdownRenderer content={selectedQuestion.answer} />
                           ) : (
                             <p style={{ margin: 0 }}>
-                              Official answer and detailed derivations are available in the marking
-                              allocation below.
+                              Review the community-verified derivations and explanations below.
                             </p>
                           )}
                         </div>
                       </div>
 
-                      {/* Common Candidate Pitfall Note */}
-                      <div
-                        style={{
-                          padding: "1rem",
-                          backgroundColor: "rgba(218, 30, 40, 0.06)",
-                          borderLeft: "3px solid var(--cds-support-error, #da1e28)",
-                          border: "1px solid var(--cds-border-subtle-01)",
-                          borderLeftWidth: "3px",
-                        }}
-                      >
+                      {/* Live Explanations from GET /api/v1/questions/{id}/explanations */}
+                      {isLoadingExplanations ? (
                         <div
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.375rem",
-                            color: "var(--cds-support-error, #da1e28)",
-                            fontWeight: 700,
-                            fontSize: "0.75rem",
-                            textTransform: "uppercase",
-                            marginBottom: "0.375rem",
-                            fontFamily: "var(--op-font-sans)",
-                          }}
-                        >
-                          <Warning size={16} />
-                          <span>Common Candidate Pitfall • Examiner Notes</span>
-                        </div>
-                        <p
-                          style={{
+                            padding: "1.5rem",
+                            textAlign: "center",
+                            backgroundColor: "var(--cds-layer-01)",
+                            border: "1px solid var(--cds-border-subtle-01)",
                             fontSize: "0.875rem",
-                            lineHeight: 1.6,
-                            margin: 0,
-                            fontFamily: "var(--op-font-serif)",
-                            color: "var(--cds-text-primary)",
+                            color: "var(--cds-text-secondary)",
+                            fontFamily: "var(--op-font-sans)",
                           }}
                         >
-                          Candidates are advised to pay strict attention to SI base dimensions,
-                          boundary conditions, and sign conventions. In multi-step conservation
-                          problems, distinguish clearly between isolated internal interactions and
-                          external non-conservative work.
-                        </p>
-                      </div>
+                          Loading explanations for Question {selectedQuestion.question_number}...
+                        </div>
+                      ) : liveExplanations.length > 0 ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+                          {liveExplanations.map((exp) => {
+                            const isPending = exp.status === "PENDING";
+                            const netVotes = (exp.upvotes || 0) - (exp.downvotes || 0);
 
-                      {/* Official Mark Scheme Allocation Matrix Table */}
-                      <div
-                        style={{
-                          border: "1px solid var(--cds-border-subtle-01)",
-                          overflowX: "auto",
-                          WebkitOverflowScrolling: "touch",
-                        }}
-                      >
+                            return (
+                              <div
+                                key={exp.id}
+                                style={{
+                                  padding: "1rem",
+                                  backgroundColor: "var(--cds-layer-01)",
+                                  border: "1px solid var(--cds-border-subtle-01)",
+                                  borderLeftWidth: "3px",
+                                  borderLeftColor: isPending
+                                    ? "var(--cds-support-warning, #f1c21b)"
+                                    : exp.is_verified
+                                      ? "var(--cds-support-success, #24a148)"
+                                      : "var(--cds-interactive, #0f62fe)",
+                                }}
+                              >
+                                {/* Top Metadata Bar */}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: "0.5rem",
+                                    paddingBottom: "0.75rem",
+                                    marginBottom: "0.75rem",
+                                    borderBottom: "1px solid var(--cds-border-subtle-01)",
+                                    fontFamily: "var(--op-font-sans)",
+                                  }}
+                                >
+                                  {/* Author Info */}
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      flexWrap: "wrap",
+                                      alignItems: "center",
+                                      gap: "0.5rem",
+                                    }}
+                                  >
+                                    <Link
+                                      href={`/users/${exp.author.id}`}
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "0.375rem",
+                                        textDecoration: "none",
+                                        color: "var(--cds-text-primary)",
+                                        fontWeight: 700,
+                                        fontSize: "0.8125rem",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          width: "22px",
+                                          height: "22px",
+                                          backgroundColor: "var(--cds-interactive, #0f62fe)",
+                                          color: "var(--cds-text-on-color, #ffffff)",
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          fontSize: "0.6875rem",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        {exp.author.username.slice(0, 2).toUpperCase()}
+                                      </span>
+                                      <span>{exp.author.username}</span>
+                                    </Link>
+
+                                    <span
+                                      style={{
+                                        padding: "0.125rem 0.375rem",
+                                        backgroundColor: "rgba(15, 98, 254, 0.12)",
+                                        border: "1px solid var(--cds-interactive, #0f62fe)",
+                                        color: "var(--cds-interactive, #0f62fe)",
+                                        fontSize: "0.6875rem",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      {exp.author.reputation} ★
+                                    </span>
+
+                                    {exp.author.role &&
+                                      exp.author.role.toUpperCase() !== "USER" && (
+                                        <Tag type="purple" size="sm">
+                                          {exp.author.role.toUpperCase()}
+                                        </Tag>
+                                      )}
+                                  </div>
+
+                                  {/* Status & Language Badges */}
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      flexWrap: "wrap",
+                                      alignItems: "center",
+                                      gap: "0.375rem",
+                                    }}
+                                  >
+                                    {isPending && (
+                                      <Tag type="warm-gray" size="sm">
+                                        <span
+                                          style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: "0.25rem",
+                                            fontWeight: 700,
+                                          }}
+                                        >
+                                          <Pending size={12} />
+                                          <span>PENDING REVIEW (PINNED)</span>
+                                        </span>
+                                      </Tag>
+                                    )}
+                                    {exp.is_verified && (
+                                      <Tag type="green" size="sm">
+                                        VERIFIED
+                                      </Tag>
+                                    )}
+                                    <Tag type="gray" size="sm">
+                                      {exp.language_code.toUpperCase()}
+                                    </Tag>
+                                  </div>
+                                </div>
+
+                                {/* Explanation Markdown & LaTeX Content */}
+                                <div className="solution-content">
+                                  <MarkdownRenderer content={exp.content_text} />
+                                </div>
+
+                                {/* Footer: Net Votes & Timestamp */}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: "0.5rem",
+                                    marginTop: "0.875rem",
+                                    paddingTop: "0.625rem",
+                                    borderTop: "1px solid var(--cds-border-subtle-01)",
+                                    fontSize: "0.75rem",
+                                    color: "var(--cds-text-secondary)",
+                                    fontFamily: "var(--op-font-sans)",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "0.75rem",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        fontWeight: 700,
+                                        color:
+                                          netVotes > 0
+                                            ? "var(--cds-support-success, #24a148)"
+                                            : "var(--cds-text-primary)",
+                                      }}
+                                    >
+                                      {netVotes >= 0 ? `+${netVotes}` : netVotes} Net Votes
+                                    </span>
+                                    <span
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "0.25rem",
+                                      }}
+                                    >
+                                      <ThumbsUp size={14} />
+                                      <span>{exp.upvotes}</span>
+                                    </span>
+                                    <span
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "0.25rem",
+                                      }}
+                                    >
+                                      <ThumbsDown size={14} />
+                                      <span>{exp.downvotes}</span>
+                                    </span>
+                                  </div>
+
+                                  <span>
+                                    Submitted{" "}
+                                    {new Date(exp.created_at).toLocaleDateString(undefined, {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
                         <div
                           style={{
-                            padding: "0.5rem 0.75rem",
-                            backgroundColor: "var(--cds-layer-02)",
-                            borderBottom: "1px solid var(--cds-border-subtle-01)",
-                            fontSize: "0.75rem",
-                            fontWeight: 700,
-                            textTransform: "uppercase",
-                            color: "var(--cds-text-primary)",
+                            padding: "1.5rem",
+                            backgroundColor: "var(--cds-layer-01)",
+                            border: "1px solid var(--cds-border-subtle-01)",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-start",
+                            gap: "0.75rem",
                             fontFamily: "var(--op-font-sans)",
                           }}
                         >
-                          Official Mark Scheme Allocation Matrix
+                          <div
+                            style={{
+                              fontSize: "0.875rem",
+                              fontWeight: 600,
+                              color: "var(--cds-text-primary)",
+                            }}
+                          >
+                            No community explanations have been approved for Question{" "}
+                            {selectedQuestion.question_number} yet.
+                          </div>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "0.8125rem",
+                              color: "var(--cds-text-secondary)",
+                            }}
+                          >
+                            Help fellow students by writing a clear step-by-step derivation or
+                            explanation using Markdown and LaTeX. Approved explanations earn
+                            community reputation points.
+                          </p>
+                          {selectedQuestion.id && (
+                            <Button
+                              size="sm"
+                              kind="primary"
+                              renderIcon={Edit}
+                              onClick={handleOpenContribute}
+                            >
+                              Write First Explanation
+                            </Button>
+                          )}
                         </div>
-                        <table
-                          style={{
-                            width: "100%",
-                            borderCollapse: "collapse",
-                            fontSize: "0.8125rem",
-                            fontFamily: "var(--op-font-sans)",
-                            textAlign: "left",
-                            minWidth: "340px",
-                          }}
-                        >
-                          <thead>
-                            <tr
-                              style={{
-                                backgroundColor: "var(--cds-layer-01)",
-                                borderBottom: "1px solid var(--cds-border-subtle-01)",
-                                color: "var(--cds-text-secondary)",
-                              }}
-                            >
-                              <th style={{ padding: "0.5rem 0.75rem", fontWeight: 600 }}>
-                                CRITERIA
-                              </th>
-                              <th style={{ padding: "0.5rem 0.75rem", fontWeight: 600 }}>
-                                METHOD SCHEME
-                              </th>
-                              <th
-                                style={{
-                                  padding: "0.5rem 0.75rem",
-                                  fontWeight: 600,
-                                  textAlign: "right",
-                                }}
-                              >
-                                MARK
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr
-                              style={{
-                                backgroundColor: "var(--cds-background)",
-                                borderBottom: "1px solid var(--cds-border-subtle-01)",
-                              }}
-                            >
-                              <td
-                                style={{
-                                  padding: "0.5rem 0.75rem",
-                                  fontWeight: 600,
-                                  color: "var(--cds-interactive, #0f62fe)",
-                                }}
-                              >
-                                M1
-                              </td>
-                              <td style={{ padding: "0.5rem 0.75rem" }}>
-                                Stating relevant physical law, governing equation, and initial
-                                conditions
-                              </td>
-                              <td
-                                style={{
-                                  padding: "0.5rem 0.75rem",
-                                  textAlign: "right",
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {(selectedQuestion.marks * 0.5).toFixed(1)}
-                              </td>
-                            </tr>
-                            <tr style={{ backgroundColor: "var(--cds-background)" }}>
-                              <td
-                                style={{
-                                  padding: "0.5rem 0.75rem",
-                                  fontWeight: 600,
-                                  color: "var(--cds-support-success, #24a148)",
-                                }}
-                              >
-                                A1
-                              </td>
-                              <td style={{ padding: "0.5rem 0.75rem" }}>
-                                Complete algebraic simplification and correct final answer / option
-                                selection
-                              </td>
-                              <td
-                                style={{
-                                  padding: "0.5rem 0.75rem",
-                                  textAlign: "right",
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {(selectedQuestion.marks * 0.5).toFixed(1)}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
+                      )}
                     </div>
                   )}
                 </section>
@@ -1732,9 +2003,7 @@ export default function PaperClient({ paper }: PaperClientProps) {
 
           <button
             type="button"
-            onClick={() =>
-              alert("Solution contribution portal opening for educators and community peers.")
-            }
+            onClick={handleOpenContribute}
             aria-label="Contribute Solution"
             style={{
               height: "34px",
@@ -1757,6 +2026,128 @@ export default function PaperClient({ paper }: PaperClientProps) {
           </button>
         </div>
       </footer>
+
+      {/* ============================================================== */}
+      {/* CONTRIBUTE EXPLANATION MODAL (POST /questions/{id}/explanations) */}
+      {/* ============================================================== */}
+      <Modal
+        open={isContributeOpen}
+        onRequestClose={() => setIsContributeOpen(false)}
+        onRequestSubmit={handleSubmitExplanation}
+        modalHeading={`Contribute Explanation — Question ${selectedQuestion ? selectedQuestion.question_number : ""}`}
+        modalLabel={`${paper.subject} • ${paper.year} Examination`}
+        primaryButtonText={
+          isSubmittingExplanation ? "Submitting..." : "Submit for Moderation Review"
+        }
+        secondaryButtonText="Cancel"
+        primaryButtonDisabled={isSubmittingExplanation || contributeContent.trim().length < 10}
+        size="lg"
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            fontFamily: "var(--op-font-sans)",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: "0.8125rem",
+              color: "var(--cds-text-secondary)",
+              lineHeight: 1.5,
+            }}
+          >
+            Write a clear, step-by-step worked solution or derivation. You can use Markdown, inline
+            LaTeX math (<code>$E = mc^2$</code>), block equations (<code>$$...$$</code>), and
+            chemical equations (<code>$\ce&#123;H2O&#125;$</code>). Submissions enter the moderation
+            queue with <strong>PENDING</strong> status and earn reputation points upon approval.
+          </p>
+
+          {contributeError && (
+            <InlineNotification
+              kind="error"
+              title="Submission Error"
+              subtitle={contributeError}
+              lowContrast
+              hideCloseButton
+            />
+          )}
+
+          <div style={{ maxWidth: "240px" }}>
+            <Select
+              id="contribute-language-select"
+              labelText="Explanation Language"
+              value={contributeLang}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setContributeLang(e.target.value as "en" | "si" | "ta")
+              }
+            >
+              <SelectItem value="en" text="English (EN)" />
+              <SelectItem value="si" text="Sinhala (SI)" />
+              <SelectItem value="ta" text="Tamil (TA)" />
+            </Select>
+          </div>
+
+          <div>
+            <ContentSwitcher
+              selectedIndex={contributeTabIndex}
+              onChange={(data: { index?: number }) => {
+                if (typeof data.index === "number") {
+                  setContributeTabIndex(data.index);
+                }
+              }}
+              size="sm"
+            >
+              <Switch name="write" text="Write Markdown / LaTeX" />
+              <Switch name="preview" text="Live Scientific Preview" />
+            </ContentSwitcher>
+
+            <div style={{ marginTop: "0.75rem" }}>
+              {contributeTabIndex === 0 ? (
+                <TextArea
+                  id="contribute-explanation-textarea"
+                  labelText="Worked Derivation & Solution (Minimum 10 characters)"
+                  helperText={`${contributeContent.trim().length} characters entered`}
+                  placeholder="Step 1: State the governing principle or equation..."
+                  rows={8}
+                  value={contributeContent}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setContributeContent(e.target.value)
+                  }
+                />
+              ) : (
+                <div
+                  style={{
+                    minHeight: "180px",
+                    padding: "1rem",
+                    backgroundColor: "var(--cds-layer-01)",
+                    border: "1px solid var(--cds-border-subtle-01)",
+                  }}
+                >
+                  {contributeContent.trim() ? (
+                    <div className="solution-content">
+                      <MarkdownRenderer content={contributeContent} />
+                    </div>
+                  ) : (
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "0.8125rem",
+                        color: "var(--cds-text-helper)",
+                      }}
+                    >
+                      Nothing to preview yet. Switch to &quot;Write Markdown / LaTeX&quot; to
+                      compose your explanation.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

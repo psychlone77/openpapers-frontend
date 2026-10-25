@@ -1,4 +1,4 @@
-import type { Localization, Explanation } from "./api";
+import type { Localization, Explanation, SubjectUnit } from "./api";
 
 export interface PaperSchema {
   _id: string;
@@ -15,6 +15,7 @@ export interface PaperSchema {
 }
 
 export interface Question {
+  id?: string;
   question_number: number;
   question_text: string;
   subject_unit: string | null;
@@ -24,6 +25,7 @@ export interface Question {
   marks: number;
   difficulty: Difficulty;
   raw_localizations?: Localization[];
+  raw_units?: SubjectUnit[];
   explanations?: Explanation[];
   correct_answer_keys?: string[];
 }

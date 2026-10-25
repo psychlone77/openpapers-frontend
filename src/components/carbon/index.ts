@@ -56,6 +56,15 @@ export {
   Pagination,
   ContentSwitcher,
   Switch,
+  Modal,
+  TextArea,
+  PasswordInput,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+  ActionableNotification,
 } from "@carbon/react";
 
 // Re-export Carbon Icons
@@ -80,6 +89,7 @@ export {
   Education,
   Upload,
   ThumbsUp,
+  ThumbsDown,
   View,
   Time,
   Launch,
@@ -101,4 +111,13 @@ export {
   InformationSquare,
   List,
   DocumentPdf,
+  UserAvatar,
+  Login,
+  Logout,
+  Locked,
+  Security,
+  StarFilled,
+  Pending,
+  Renew,
+  Add,
 } from "@carbon/icons-react";

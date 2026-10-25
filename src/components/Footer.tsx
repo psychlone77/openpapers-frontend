@@ -232,7 +232,7 @@ export function Footer() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-          <span>© ${new Date().getFullYear()} OpenPapers Community</span>
+          <span>© {new Date().getFullYear()} OpenPapers Community</span>
         </div>
 
         <div>

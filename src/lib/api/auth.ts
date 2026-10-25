@@ -1,34 +1,35 @@
-import { API_BASE_URL } from "./config";
-import { ApiError } from "./papers";
-import type { LoginRequest, LoginResponse, ErrorModel } from "../types/api";
+import {
+  loginUserServerAction,
+  refreshAuthTokenServerAction,
+  verifyAuthTokenServerAction,
+} from "../actions/userActions";
+import type {
+  LoginRequest,
+  LoginResponse,
+  RefreshResponse,
+  VerifyTokenResponse,
+} from "../types/api";
 
 /**
  * Authenticate user with username or email and password
+ * POST /api/v1/auth/login
  */
 export async function loginUser(credentials: LoginRequest): Promise<LoginResponse> {
-  const url = `${API_BASE_URL}/api/v1/auth/login`;
+  return await loginUserServerAction(credentials);
+}
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(credentials),
-  });
+/**
+ * Refresh JWT access and refresh token pair
+ * POST /api/v1/auth/refresh
+ */
+export async function refreshAuthToken(refreshToken: string): Promise<RefreshResponse> {
+  return await refreshAuthTokenServerAction(refreshToken);
+}
 
-  if (!res.ok) {
-    let errorModel: ErrorModel | undefined;
-    try {
-      errorModel = (await res.json()) as ErrorModel;
-    } catch {
-      // Non-JSON error payload
-    }
-
-    const message =
-      errorModel?.detail || errorModel?.title || `Login failed with status: ${res.status}`;
-    throw new ApiError(message, res.status, errorModel);
-  }
-
-  return (await res.json()) as LoginResponse;
+/**
+ * Verify JWT access token and return claims + user profile
+ * GET /api/v1/auth/verify
+ */
+export async function verifyAuthToken(accessToken: string): Promise<VerifyTokenResponse> {
+  return await verifyAuthTokenServerAction(accessToken);
 }

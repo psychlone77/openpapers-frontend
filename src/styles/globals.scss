@@ -488,7 +488,7 @@ body {
 .op-mcq-option {
   display: flex;
   align-items: flex-start;
-  padding: 0.75rem 0.875rem;
+  padding: 0.875rem 1rem;
   background-color: var(--cds-layer-02);
   border: 1px solid var(--cds-border-subtle-01);
   cursor: pointer;
@@ -497,12 +497,7 @@ body {
     border-color 110ms ease;
   user-select: none;
   position: relative;
-  flex-wrap: wrap;
-
-  @media (min-width: 640px) {
-    padding: 0.875rem 1rem;
-    flex-wrap: nowrap;
-  }
+  gap: 0.875rem;
 
   &:hover {
     background-color: var(--cds-layer-hover-01);
@@ -527,25 +522,20 @@ body {
   .op-option-letter {
     width: 28px;
     height: 28px;
-    display: flex;
+    min-width: 28px;
+    min-height: 28px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 0.8125rem;
     font-family: var(--op-font-sans);
     flex-shrink: 0;
-    margin-right: 0.75rem;
     background-color: var(--cds-layer-01);
     border: 1px solid var(--cds-border-subtle-01);
     color: var(--cds-text-primary);
     transition: all 110ms ease;
-
-    @media (min-width: 640px) {
-      width: 32px;
-      height: 32px;
-      font-size: 0.875rem;
-      margin-right: 1rem;
-    }
+    margin-top: 0;
   }
 
   &.selected .op-option-letter {
@@ -566,28 +556,52 @@ body {
     color: var(--cds-text-on-color, #ffffff);
   }
 
-  .op-option-badge {
-    margin-left: 0;
-    margin-top: 0.5rem;
-    width: 100%;
+  .op-option-content {
+    flex: 1 1 0%;
+    min-width: 0;
     display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 28px;
+
+    .markdown-content,
+    .question-typography {
+      font-family: var(--op-font-serif);
+      font-size: 1rem;
+      line-height: 28px;
+      color: var(--cds-text-primary);
+
+      p {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: 28px;
+      }
+    }
+  }
+
+  .op-option-badge {
+    @media (max-width: 640px) {
+      display: none;
+    }
+    @media (min-width: 641px) {
+      display: inline-flex;
+    }
+    height: 28px;
     align-items: center;
     gap: 0.25rem;
+    padding: 0 0.5rem;
     font-size: 0.6875rem;
     font-weight: 700;
+    font-family: var(--op-font-sans);
     text-transform: uppercase;
     color: var(--cds-support-success, #24a148);
     border: 1px solid var(--cds-support-success, #24a148);
-    padding: 0.125rem 0.5rem;
-
-    @media (min-width: 640px) {
-      margin-left: auto;
-      margin-top: 0;
-      width: auto;
-      font-size: 0.75rem;
-      padding-left: 0.75rem;
-      flex-shrink: 0;
-    }
+    margin-left: auto;
+    flex-shrink: 0;
+    margin-top: 0;
+    white-space: nowrap;
   }
 }
 

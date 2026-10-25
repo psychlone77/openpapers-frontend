@@ -49,6 +49,115 @@ export interface LoginResponse {
   user: UserResponse;
 }
 
+export interface RefreshRequest {
+  $schema?: string;
+  refresh_token: string;
+}
+
+export interface RefreshResponse {
+  $schema?: string;
+  access_token: string;
+  refresh_token: string;
+  user: UserResponse;
+}
+
+export interface TokenClaims {
+  user_id: string;
+  role: string;
+  token_type: string;
+  expires_at: string;
+  issued_at: string;
+  issuer: string;
+}
+
+export interface VerifyTokenResponse {
+  $schema?: string;
+  valid: boolean;
+  claims: TokenClaims;
+  user: UserResponse;
+}
+
+export interface UserStats {
+  approved_explanations: number;
+  pending_explanations: number;
+  total_votes_received: number;
+}
+
+export interface UserProfileResponse {
+  $schema?: string;
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  reputation: number;
+  created_at: string;
+  stats: UserStats;
+}
+
+export interface PublicUserProfileResponse {
+  $schema?: string;
+  id: string;
+  username: string;
+  role: string;
+  reputation: number;
+  created_at: string;
+  stats: UserStats;
+}
+
+export interface UpdateProfileRequest {
+  $schema?: string;
+  username?: string;
+  current_password?: string;
+  new_password?: string;
+}
+
+export interface AuthorSummary {
+  id: string;
+  username: string;
+  reputation: number;
+  role: string;
+}
+
+export type ExplanationStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface ExplanationResponse {
+  $schema?: string;
+  id: string;
+  question_id: string;
+  language_code: string;
+  content_text: string;
+  content_images?: unknown;
+  upvotes: number;
+  downvotes: number;
+  is_verified: boolean;
+  status: ExplanationStatus | string;
+  rejection_reason?: string;
+  created_at: string;
+  updated_at: string;
+  author: AuthorSummary;
+}
+
+export interface CreateExplanationRequest {
+  $schema?: string;
+  language_code: "en" | "si" | "ta";
+  content_text: string;
+  content_images?: unknown;
+}
+
+export interface GetPendingExplanationsOutputBody {
+  $schema?: string;
+  items: ExplanationResponse[] | null;
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ReviewExplanationRequest {
+  $schema?: string;
+  decision: "APPROVE" | "REJECT";
+  reason?: string;
+}
+
 export interface SubjectUnit {
   id: string;
   subject_id: string;
@@ -232,6 +341,7 @@ export interface PaperEditionSummary {
 export interface PaperSummary {
   id: string;
   subject_id: string;
+  subject_name?: string;
   year: number;
   part: string;
   type: string;
@@ -239,7 +349,7 @@ export interface PaperSummary {
   question_count?: number;
   created_at?: string;
   updated_at?: string;
-  subject?: Subject | null;
+  subject?: Subject | SubjectSummary | null;
   editions?: PaperEditionSummary[] | PaperEdition[] | null;
 }
 

@@ -118,6 +118,7 @@ export function transformApiPaperToSchema(
         : null;
 
       return {
+        id: apiQ.id,
         question_number: apiQ.sort_order || parseInt(apiQ.label, 10) || 1,
         question_text: localized.question_text,
         subject_unit,
@@ -127,6 +128,7 @@ export function transformApiPaperToSchema(
         marks: apiQ.marks_allocated ?? 1,
         difficulty: mapDifficulty(apiQ.difficulty),
         raw_localizations: apiQ.localizations || undefined,
+        raw_units: apiQ.units || undefined,
         explanations: apiQ.explanations || undefined,
         correct_answer_keys: apiQ.correct_answer_keys || undefined,
       };

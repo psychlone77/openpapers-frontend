@@ -10,11 +10,13 @@ import {
 } from "@/lib/api/curriculum";
 
 export async function getSubjectYearsAction(subjectIdOrName: string): Promise<number[]> {
-  return await fetchSubjectYears(subjectIdOrName);
+  const subjects = await fetchSubjects();
+  return await fetchSubjectYears(subjectIdOrName, subjects);
 }
 
 export async function getSubjectPapersAction(subjectIdOrName: string, year?: number | string) {
-  return await fetchSubjectPapers(subjectIdOrName, year);
+  const subjects = await fetchSubjects();
+  return await fetchSubjectPapers(subjectIdOrName, year, subjects);
 }
 
 export async function getSubjectsAction(stream?: string) {

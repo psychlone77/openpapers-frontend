@@ -7,109 +7,36 @@ import type {
   SubjectYearsResponse,
 } from "../types/api";
 
-export const FALLBACK_EXAMS: ExamSummary[] = [
-  {
-    id: "sl_al",
-    name: "Sri Lankan GCE A/L",
-    country: "LK",
-    description: "Sri Lankan General Certificate of Education (Advanced Level)",
-    paper_count: 70,
-    subject_count: 8,
-  },
-];
-
-export const FALLBACK_SUBJECTS: SubjectSummary[] = [
-  {
-    id: "01a13b2e-9fe2-7e6a-80f4-35e8d16d5ec2",
-    exam_id: "sl_al",
-    code: "01",
-    name: "Physics",
-    streams: ["Physical Science", "Bio Science"],
-    paper_count: 11,
-  },
-  {
-    id: "01a13b2e-9fe6-7e13-842a-989749b89d33",
-    exam_id: "sl_al",
-    code: "10",
-    name: "Chemistry",
-    streams: ["Physical Science", "Bio Science"],
-    paper_count: 11,
-  },
-  {
-    id: "01a13b2e-9fe5-72ac-b1e9-5af3cb842fda",
-    exam_id: "sl_al",
-    code: "09",
-    name: "Biology",
-    streams: ["Bio Science"],
-    paper_count: 11,
-  },
-  {
-    id: "01a13b2e-9fec-7668-816e-b453e2932cdf",
-    exam_id: "sl_al",
-    code: "33",
-    name: "Accounting",
-    streams: ["Commerce", "Arts"],
-    paper_count: 10,
-  },
-  {
-    id: "01a13b2e-9fe8-78bd-ac53-e7f0ac65c75e",
-    exam_id: "sl_al",
-    code: "31",
-    name: "Economics",
-    streams: ["Commerce", "Arts"],
-    paper_count: 11,
-  },
-  {
-    id: "01a13b2e-9fea-77ca-966a-5008840364af",
-    exam_id: "sl_al",
-    code: "32",
-    name: "Business Studies",
-    streams: ["Commerce"],
-    paper_count: 5,
-  },
-  {
-    id: "01a13b2e-9fed-7e97-b6f1-7011c46ae5c5",
-    exam_id: "sl_al",
-    code: "34",
-    name: "Business Statistics",
-    streams: ["Commerce"],
-    paper_count: 10,
-  },
-  {
-    id: "01a13b2e-9fef-75a7-9b00-d1a228559946",
-    exam_id: "sl_al",
-    code: "43",
-    name: "History of Sri Lanka",
-    streams: ["Arts"],
-    paper_count: 1,
-  },
-];
-
 /**
  * Helper to resolve subject identifier or name to subject UUID
  */
-export function resolveSubjectId(subjectIdOrName: string): string {
-  if (!subjectIdOrName) return FALLBACK_SUBJECTS[0].id;
+export function resolveSubjectId(subjectIdOrName: string, subjects?: SubjectSummary[]): string {
+  if (!subjectIdOrName) return subjects?.[0]?.id || "";
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (uuidRegex.test(subjectIdOrName)) {
     return subjectIdOrName;
   }
-  const clean = subjectIdOrName.trim().toLowerCase();
-  const match = FALLBACK_SUBJECTS.find((s) => s.name.toLowerCase() === clean);
-  return match ? match.id : FALLBACK_SUBJECTS[0].id;
+  if (subjects && subjects.length > 0) {
+    const clean = subjectIdOrName.trim().toLowerCase();
+    const match = subjects.find((s) => s.name.toLowerCase() === clean);
+    if (match) return match.id;
+  }
+  return subjectIdOrName;
 }
 
 /**
  * Helper to resolve subject name from UUID or string
  */
-export function resolveSubjectName(subjectIdOrName: string): string {
-  if (!subjectIdOrName) return FALLBACK_SUBJECTS[0].name;
-  const match = FALLBACK_SUBJECTS.find(
-    (s) =>
-      s.id.toLowerCase() === subjectIdOrName.toLowerCase() ||
-      s.name.toLowerCase() === subjectIdOrName.toLowerCase()
-  );
-  return match ? match.name : subjectIdOrName;
+export function resolveSubjectName(subjectIdOrName: string, subjects?: SubjectSummary[]): string {
+  if (!subjectIdOrName) return subjects?.[0]?.name || "";
+  if (subjects && subjects.length > 0) {
+    const clean = subjectIdOrName.trim().toLowerCase();
+    const match = subjects.find(
+      (s) => s.id.toLowerCase() === clean || s.name.toLowerCase() === clean
+    );
+    if (match) return match.name;
+  }
+  return subjectIdOrName;
 }
 
 /**
@@ -120,12 +47,12 @@ export async function fetchExams(): Promise<ExamSummary[]> {
     const res = await fetch(`${API_BASE_URL}/api/v1/exams`, {
       next: { revalidate: 3600 },
     });
-    if (!res.ok) return FALLBACK_EXAMS;
+    if (!res.ok) return [];
     const data = (await res.json()) as ExamSummary[];
-    return Array.isArray(data) && data.length > 0 ? data : FALLBACK_EXAMS;
+    return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.warn("fetchExams network error, using fallback data:", error);
-    return FALLBACK_EXAMS;
+    console.warn("fetchExams network error:", error);
+    return [];
   }
 }
 
@@ -138,20 +65,24 @@ export async function fetchSubjects(stream?: string): Promise<SubjectSummary[]> 
     const res = await fetch(`${API_BASE_URL}/api/v1/subjects${query}`, {
       next: { revalidate: 3600 },
     });
-    if (!res.ok) return FALLBACK_SUBJECTS;
+    if (!res.ok) return [];
     const data = (await res.json()) as SubjectSummary[];
-    return Array.isArray(data) && data.length > 0 ? data : FALLBACK_SUBJECTS;
+    return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.warn("fetchSubjects network error, using fallback data:", error);
-    return FALLBACK_SUBJECTS;
+    console.warn("fetchSubjects network error:", error);
+    return [];
   }
 }
 
 /**
  * Fetch available examination years for a given subject
  */
-export async function fetchSubjectYears(subjectIdOrName: string): Promise<number[]> {
-  const resolvedId = resolveSubjectId(subjectIdOrName);
+export async function fetchSubjectYears(
+  subjectIdOrName: string,
+  subjects?: SubjectSummary[]
+): Promise<number[]> {
+  const resolvedId = resolveSubjectId(subjectIdOrName, subjects);
+  if (!resolvedId) return [];
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/subjects/${encodeURIComponent(resolvedId)}/years`,
@@ -159,14 +90,12 @@ export async function fetchSubjectYears(subjectIdOrName: string): Promise<number
         next: { revalidate: 3600 },
       }
     );
-    if (!res.ok) return [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
+    if (!res.ok) return [];
     const data = (await res.json()) as SubjectYearsResponse;
-    return Array.isArray(data.years) && data.years.length > 0
-      ? data.years
-      : [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
+    return Array.isArray(data.years) ? data.years : [];
   } catch (error) {
-    console.warn("fetchSubjectYears network error, using fallback years:", error);
-    return [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
+    console.warn("fetchSubjectYears network error:", error);
+    return [];
   }
 }
 
@@ -175,9 +104,11 @@ export async function fetchSubjectYears(subjectIdOrName: string): Promise<number
  */
 export async function fetchSubjectPapers(
   subjectIdOrName: string,
-  year?: number | string
+  year?: number | string,
+  subjects?: SubjectSummary[]
 ): Promise<PaperSummary[]> {
-  const resolvedId = resolveSubjectId(subjectIdOrName);
+  const resolvedId = resolveSubjectId(subjectIdOrName, subjects);
+  if (!resolvedId) return [];
   const query =
     year && year !== "all" && year !== "All Years" ? `?year=${encodeURIComponent(year)}` : "";
   try {

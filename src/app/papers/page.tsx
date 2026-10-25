@@ -49,7 +49,7 @@ export default async function PapersPage({ searchParams }: PapersPageProps) {
   let papers: PaperSummary[] = [];
 
   if (activeSubjectId) {
-    papers = await fetchSubjectPapers(activeSubjectId, year);
+    papers = await fetchSubjectPapers(activeSubjectId, year, subjects);
   } else {
     papers = await fetchRecentPapers();
   }
@@ -64,7 +64,14 @@ export default async function PapersPage({ searchParams }: PapersPageProps) {
     });
   }
 
-  const activeSubjectName = activeSubjectId ? resolveSubjectName(activeSubjectId) : "All Subjects";
+  const currentSubject = subjects.find(
+    (s) => s.id === activeSubjectId || s.name.toLowerCase() === activeSubjectId?.toLowerCase()
+  );
+  const activeSubjectName =
+    currentSubject?.name ||
+    papers[0]?.subject?.name ||
+    papers[0]?.subject_name ||
+    (activeSubjectId ? resolveSubjectName(activeSubjectId, subjects) : "All Subjects");
   const activeYearLabel = year && year !== "all" ? year : "All Years";
 
   return (
@@ -169,7 +176,7 @@ export default async function PapersPage({ searchParams }: PapersPageProps) {
           }}
         >
           {papers.map((paper) => {
-            const subjectLabel = paper.subject?.name || activeSubjectName;
+            const subjectLabel = paper.subject?.name || paper.subject_name || activeSubjectName;
             const editionLangs =
               paper.editions?.map((e) => e.language_code.toUpperCase()).join(" • ") || "EN";
 
