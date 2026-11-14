@@ -25,6 +25,39 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+// Immediate theme background enforcement on root elements to eliminate navigation flash
+html.cds--g100,
+body.cds--g100,
+html[data-carbon-theme="g100"],
+body[data-carbon-theme="g100"] {
+  background-color: #161616;
+  color: #f4f4f4;
+}
+
+html.cds--g90,
+body.cds--g90,
+html[data-carbon-theme="g90"],
+body[data-carbon-theme="g90"] {
+  background-color: #262626;
+  color: #f4f4f4;
+}
+
+html.cds--g10,
+body.cds--g10,
+html[data-carbon-theme="g10"],
+body[data-carbon-theme="g10"] {
+  background-color: #f4f4f4;
+  color: #161616;
+}
+
+html.cds--white,
+body.cds--white,
+html[data-carbon-theme="white"],
+body[data-carbon-theme="white"] {
+  background-color: #ffffff;
+  color: #161616;
+}
+
 // Academic Engineering Grid Background
 .openpapers-grid-bg {
   position: fixed;

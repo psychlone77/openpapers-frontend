@@ -25,6 +25,9 @@ export interface User {
   email: string;
   role: string;
   reputation: number;
+  bio?: string;
+  institution?: string;
+  location?: string;
   created_at: string;
 }
 
@@ -34,6 +37,16 @@ export interface UserResponse {
   email: string;
   role: string;
   reputation: number;
+  bio?: string;
+  institution?: string;
+  location?: string;
+}
+
+export interface RegisterRequest {
+  $schema?: string;
+  username: string;
+  email: string;
+  password: string;
 }
 
 export interface LoginRequest {
@@ -90,6 +103,9 @@ export interface UserProfileResponse {
   email: string;
   role: string;
   reputation: number;
+  bio?: string;
+  institution?: string;
+  location?: string;
   created_at: string;
   stats: UserStats;
 }
@@ -100,6 +116,9 @@ export interface PublicUserProfileResponse {
   username: string;
   role: string;
   reputation: number;
+  bio?: string;
+  institution?: string;
+  location?: string;
   created_at: string;
   stats: UserStats;
 }
@@ -107,6 +126,9 @@ export interface PublicUserProfileResponse {
 export interface UpdateProfileRequest {
   $schema?: string;
   username?: string;
+  bio?: string;
+  institution?: string;
+  location?: string;
   current_password?: string;
   new_password?: string;
 }

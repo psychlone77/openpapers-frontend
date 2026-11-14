@@ -1,14 +1,24 @@
 import {
+  registerUserServerAction,
   loginUserServerAction,
   refreshAuthTokenServerAction,
   verifyAuthTokenServerAction,
 } from "../actions/userActions";
 import type {
+  RegisterRequest,
   LoginRequest,
   LoginResponse,
   RefreshResponse,
   VerifyTokenResponse,
 } from "../types/api";
+
+/**
+ * Register a new user account
+ * POST /api/v1/auth/register
+ */
+export async function registerUser(payload: RegisterRequest): Promise<LoginResponse> {
+  return await registerUserServerAction(payload);
+}
 
 /**
  * Authenticate user with username or email and password

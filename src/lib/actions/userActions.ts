@@ -2,6 +2,7 @@
 
 import { API_BASE_URL } from "@/lib/api/config";
 import type {
+  RegisterRequest,
   LoginRequest,
   LoginResponse,
   RefreshResponse,
@@ -26,6 +27,24 @@ async function extractErrorMessage(res: Response, fallbackMessage: string): Prom
   } catch {
     return `${fallbackMessage} (${res.status})`;
   }
+}
+
+export async function registerUserServerAction(payload: RegisterRequest): Promise<LoginResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(await extractErrorMessage(res, "Registration failed"));
+  }
+
+  return (await res.json()) as LoginResponse;
 }
 
 export async function loginUserServerAction(credentials: LoginRequest): Promise<LoginResponse> {

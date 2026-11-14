@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Tile, Tag, Breadcrumb, BreadcrumbItem } from "@/components/carbon";
 
 const team = [
@@ -45,7 +46,11 @@ export default function AboutPage() {
       }}
     >
       <Breadcrumb noTrailingSlash style={{ marginBottom: "2rem" }}>
-        <BreadcrumbItem href="/">Home</BreadcrumbItem>
+        <BreadcrumbItem>
+          <Link href="/" className="cds--link">
+            Home
+          </Link>
+        </BreadcrumbItem>
         <BreadcrumbItem isCurrentPage>About</BreadcrumbItem>
       </Breadcrumb>
 

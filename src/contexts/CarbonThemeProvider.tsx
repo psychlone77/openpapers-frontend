@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { Theme } from "@carbon/react";
 
 export type CarbonThemeMode = "white" | "g10" | "g90" | "g100";
 
@@ -14,46 +13,75 @@ interface CarbonThemeContextType {
 
 const CarbonThemeContext = createContext<CarbonThemeContextType | undefined>(undefined);
 
+const THEME_CLASSES = ["cds--white", "cds--g10", "cds--g90", "cds--g100"] as const;
+
+function applyThemeToDOM(theme: CarbonThemeMode) {
+  if (typeof document === "undefined") return;
+
+  document.documentElement.setAttribute("data-carbon-theme", theme);
+  document.documentElement.classList.remove(...THEME_CLASSES);
+  document.documentElement.classList.add(`cds--${theme}`);
+
+  if (document.body) {
+    document.body.setAttribute("data-carbon-theme", theme);
+    document.body.classList.remove(...THEME_CLASSES);
+    document.body.classList.add(`cds--${theme}`);
+  }
+}
+
 export function CarbonThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setCurrentTheme] = useState<CarbonThemeMode>("white");
-  const [mounted, setMounted] = useState(false);
 
+  // Sync React state with the theme already applied to <html> by the blocking head script
   useEffect(() => {
-    const savedTheme = localStorage.getItem("openpapers-theme") as CarbonThemeMode | null;
-    if (savedTheme && ["white", "g10", "g90", "g100"].includes(savedTheme)) {
-      setCurrentTheme(savedTheme);
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setCurrentTheme(prefersDark ? "g100" : "white");
+    try {
+      const domTheme = document.documentElement.getAttribute(
+        "data-carbon-theme"
+      ) as CarbonThemeMode | null;
+      const saved = localStorage.getItem("openpapers-theme") as CarbonThemeMode | null;
+      const resolved: CarbonThemeMode =
+        saved && ["white", "g10", "g90", "g100"].includes(saved)
+          ? saved
+          : domTheme && ["white", "g10", "g90", "g100"].includes(domTheme)
+            ? domTheme
+            : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "g100"
+              : "white";
+
+      setCurrentTheme(resolved);
+      applyThemeToDOM(resolved);
+      localStorage.setItem("openpapers-theme", resolved);
+    } catch {
+      // Ignore storage errors in private browsing
     }
-    setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.setAttribute("data-carbon-theme", theme);
-    document.body.setAttribute("data-carbon-theme", theme);
-    localStorage.setItem("openpapers-theme", theme);
-  }, [theme, mounted]);
 
   const isDarkMode = theme === "g90" || theme === "g100";
 
   const toggleTheme = () => {
     const nextTheme: CarbonThemeMode = isDarkMode ? "white" : "g100";
     setCurrentTheme(nextTheme);
+    applyThemeToDOM(nextTheme);
+    try {
+      localStorage.setItem("openpapers-theme", nextTheme);
+    } catch {
+      // Ignore
+    }
   };
 
   const setTheme = (newTheme: CarbonThemeMode) => {
     setCurrentTheme(newTheme);
+    applyThemeToDOM(newTheme);
+    try {
+      localStorage.setItem("openpapers-theme", newTheme);
+    } catch {
+      // Ignore
+    }
   };
 
   return (
     <CarbonThemeContext.Provider value={{ theme, isDarkMode, toggleTheme, setTheme }}>
-      <Theme theme={theme}>
-        <div data-carbon-theme={theme} className="min-h-screen">
-          {children}
-        </div>
-      </Theme>
+      <div className="min-h-screen">{children}</div>
     </CarbonThemeContext.Provider>
   );
 }

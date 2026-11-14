@@ -46,7 +46,11 @@ export default function GuidePage() {
       }}
     >
       <Breadcrumb noTrailingSlash style={{ marginBottom: "2rem" }}>
-        <BreadcrumbItem href="/">Home</BreadcrumbItem>
+        <BreadcrumbItem>
+          <Link href="/" className="cds--link">
+            Home
+          </Link>
+        </BreadcrumbItem>
         <BreadcrumbItem isCurrentPage>Guide</BreadcrumbItem>
       </Breadcrumb>
 

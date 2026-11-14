@@ -1197,8 +1197,9 @@ export default function PaperClient({ paper }: PaperClientProps) {
                   <span
                     style={{
                       padding: "0.125rem 0.375rem",
-                      backgroundColor: "var(--cds-text-primary)",
-                      color: "var(--cds-text-on-color, #ffffff)",
+                      backgroundColor: "var(--cds-layer-02)",
+                      border: "1px solid var(--cds-border-subtle-01)",
+                      color: "var(--cds-text-primary)",
                       fontSize: "0.6875rem",
                       fontWeight: 700,
                       fontFamily: "var(--op-font-sans)",
@@ -1515,8 +1516,9 @@ export default function PaperClient({ paper }: PaperClientProps) {
                                 fontSize: "0.75rem",
                                 fontWeight: 700,
                                 fontFamily: "var(--op-font-sans)",
-                                backgroundColor: "var(--cds-text-primary)",
-                                color: "var(--cds-text-on-color, #ffffff)",
+                                backgroundColor: "var(--cds-layer-02)",
+                                border: "1px solid var(--cds-border-subtle-01)",
+                                color: "var(--cds-text-primary)",
                                 padding: "0.125rem 0.5rem",
                               }}
                             >
@@ -2008,9 +2010,9 @@ export default function PaperClient({ paper }: PaperClientProps) {
             style={{
               height: "34px",
               padding: "0 0.625rem",
-              backgroundColor: "var(--cds-text-primary)",
+              backgroundColor: "var(--cds-interactive, #0f62fe)",
               color: "var(--cds-text-on-color, #ffffff)",
-              border: "1px solid var(--cds-text-primary)",
+              border: "1px solid var(--cds-interactive, #0f62fe)",
               fontFamily: "var(--op-font-sans)",
               fontSize: "0.75rem",
               fontWeight: 600,

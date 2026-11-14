@@ -84,7 +84,11 @@ export default async function PapersPage({ searchParams }: PapersPageProps) {
     >
       {/* Breadcrumb Navigation */}
       <Breadcrumb noTrailingSlash style={{ marginBottom: "1.5rem" }}>
-        <BreadcrumbItem href="/">Home</BreadcrumbItem>
+        <BreadcrumbItem>
+          <Link href="/" className="cds--link">
+            Home
+          </Link>
+        </BreadcrumbItem>
         <BreadcrumbItem isCurrentPage>Examination Papers</BreadcrumbItem>
       </Breadcrumb>
 

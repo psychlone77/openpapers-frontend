@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { loginUser, refreshAuthToken, verifyAuthToken } from "@/lib/api/auth";
-import type { LoginRequest, UserResponse } from "@/lib/types/api";
+import { registerUser, loginUser, refreshAuthToken, verifyAuthToken } from "@/lib/api/auth";
+import type { RegisterRequest, LoginRequest, UserResponse } from "@/lib/types/api";
 
 interface AuthContextValue {
   user: UserResponse | null;
@@ -12,6 +12,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isModeratorOrAdmin: boolean;
   login: (credentials: LoginRequest) => Promise<UserResponse>;
+  register: (payload: RegisterRequest) => Promise<UserResponse>;
   logout: () => void;
   updateUserState: (updated: Partial<UserResponse>) => void;
   refreshSession: () => Promise<string | null>;
@@ -155,6 +156,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [persistSession]
   );
 
+  const register = useCallback(
+    async (payload: RegisterRequest): Promise<UserResponse> => {
+      const res = await registerUser(payload);
+      persistSession(res.access_token, res.refresh_token, res.user);
+      return res.user;
+    },
+    [persistSession]
+  );
+
   const logout = useCallback(() => {
     clearSession();
   }, [clearSession]);
@@ -185,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: Boolean(user && accessToken),
         isModeratorOrAdmin,
         login,
+        register,
         logout,
         updateUserState,
         refreshSession,
