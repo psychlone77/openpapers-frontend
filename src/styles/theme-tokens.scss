@@ -1,0 +1,54 @@
+// src/styles/theme-tokens.scss
+// OpenPapers Design Token System mapped to IBM Carbon Tokens
+
+:root {
+  // Brand Accents (Flexible - can be easily overridden)
+  --op-brand-primary: var(--cds-interactive, #0f62fe);
+  --op-brand-accent: var(--cds-link-primary, #0043ce);
+  --op-brand-success: var(--cds-support-success, #24a148);
+  --op-brand-error: var(--cds-support-error, #da1e28);
+  --op-brand-warning: var(--cds-support-warning, #f1c21b);
+  --op-brand-info: var(--cds-support-info, #4589ff);
+
+  // Surface & Layer Tokens
+  --op-surface-base: var(--cds-background, #ffffff);
+  --op-surface-layer-1: var(--cds-layer-01, #f4f4f4);
+  --op-surface-layer-2: var(--cds-layer-02, #e0e0e0);
+  --op-border-subtle: var(--cds-border-subtle-01, #e0e0e0);
+  --op-border-strong: var(--cds-border-strong-01, #8d8d8d);
+  --op-border-interactive: var(--cds-border-interactive, #0f62fe);
+
+  // Text Tokens
+  --op-text-primary: var(--cds-text-primary, #161616);
+  --op-text-secondary: var(--cds-text-secondary, #525252);
+  --op-text-helper: var(--cds-text-helper, #6f6f6f);
+  --op-text-on-color: var(--cds-text-on-color, #ffffff);
+
+  // Typography Families (Strict No-Monospace in UI)
+  --op-font-sans:
+    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --op-font-serif: "IBM Plex Serif", Georgia, Cambria, "Times New Roman", Times, serif;
+  --op-font-mono: var(--op-font-sans);
+
+  // Strict Brand Motif: Sharp Edges (0px border radius across all controls)
+  --op-border-radius: 0px;
+}
+
+// Global Sharp Edges Enforcement for Carbon and custom elements
+*,
+*::before,
+*::after {
+  border-radius: var(--op-border-radius) !important;
+}
+
+.cds--btn,
+.cds--tile,
+.cds--dropdown,
+.cds--select-input,
+.cds--text-input,
+.cds--modal-container,
+.cds--header,
+.cds--side-nav,
+.cds--tag {
+  border-radius: 0 !important;
+}

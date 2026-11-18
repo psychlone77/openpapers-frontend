@@ -1,5 +1,5 @@
-import { Spin } from "antd";
+import CarbonLoader from "@/components/carbon/CarbonLoader";
 
 export default function Loading() {
-  return <Spin fullscreen size="large" tip="Loading Paper Content..." />;
+  return <CarbonLoader description="Loading Paper Content..." />;
 }

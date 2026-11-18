@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import PaperClient from "./PaperClient";
 import getPaper from "@/lib/actions/paperActions";
-import { Spin } from "antd";
+import CarbonLoader from "@/components/carbon/CarbonLoader";
 
 // This component runs on the server
 export default async function PaperPage({
@@ -19,7 +19,7 @@ export default async function PaperPage({
   }
 
   return (
-    <Suspense fallback={<Spin fullscreen size="large" tip="Loading Paper Content..." />}>
+    <Suspense fallback={<CarbonLoader description="Loading Paper Content..." />}>
       <PaperClient paper={paper} />
     </Suspense>
   );

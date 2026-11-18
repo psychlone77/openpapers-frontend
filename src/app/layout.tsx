@@ -1,25 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import "katex/dist/katex.min.css";
+import "@/styles/globals.scss";
 import { Navbar } from "@/components/Navbar";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
-import "@ant-design/v5-patch-for-react-19";
+import { Footer } from "@/components/Footer";
 import Providers from "@/app/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "OpenPapers",
-  description: "An open platform for all exam papers",
+  title: "OpenPapers | Open Examination Papers Platform",
+  description: "An open platform for past examination papers, solutions, and structured practice.",
 };
 
 export default function RootLayout({
@@ -28,16 +15,48 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light" suppressHydrationWarning>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <AntdRegistry>
+    <html lang="en" suppressHydrationWarning className="cds--white" data-carbon-theme="white">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('openpapers-theme');
+                  var theme = 'white';
+                  if (saved && (saved === 'white' || saved === 'g10' || saved === 'g90' || saved === 'g100')) {
+                    theme = saved;
+                  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    theme = 'g100';
+                  }
+                  document.documentElement.setAttribute('data-carbon-theme', theme);
+                  document.documentElement.classList.remove('cds--white', 'cds--g10', 'cds--g90', 'cds--g100');
+                  document.documentElement.classList.add('cds--' + theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body suppressHydrationWarning>
         <Providers>
-          <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
+          <div className="openpapers-grid-bg" aria-hidden="true" />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
+            }}
+          >
             <Navbar />
-            <div className="pt-8">{children}</div>
-          </body>
+            <main id="main-content" style={{ flex: "1 0 auto" }}>
+              {children}
+            </main>
+            <Footer />
+          </div>
         </Providers>
-      </AntdRegistry>
+      </body>
     </html>
   );
 }

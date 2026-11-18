@@ -1,104 +1,152 @@
 "use client";
 
-import { Typography, Steps, Card, Button, Space, theme } from "antd";
-import {
-  BookOutlined,
-  RightOutlined,
-  ArrowUpOutlined,
-  AimOutlined,
-  HomeOutlined,
-} from "@ant-design/icons";
+import React from "react";
 import Link from "next/link";
+import { Tile, Button, Breadcrumb, BreadcrumbItem } from "@/components/carbon";
+import { ArrowRight, Book, Document, Checkmark, Home } from "@/components/carbon";
 
-const { Title, Paragraph, Text } = Typography;
-const { useToken } = theme;
-
-const GuidePage: React.FC = () => {
-  const { token } = useToken();
-
+export default function GuidePage() {
   const guideSteps = [
     {
-      title: "Pick Your Subject",
-      description: "Open the Subject dropdown and choose the A‑Level subject you want to practise.",
-      icon: <BookOutlined />,
-    },
-    {
-      title: "Choose Year & Type",
+      number: "01",
+      title: "Select Examination Subject",
       description:
-        "Select the exam year and paper type (MCQ, Structured Essay, etc.) from the dropdowns.",
-      icon: <RightOutlined />,
+        "Choose your target subject from the dropdown menu (Physics, Biology, Chemistry, Mathematics).",
+      icon: Book,
     },
     {
-      title: "Press Submit",
+      number: "02",
+      title: "Choose Year & Paper Format",
       description:
-        "Hit the Submit button to fetch that paper. We'll load questions and keep track of your picks.",
-      icon: <ArrowUpOutlined />,
+        "Filter by past examination years (2015 to 2025) and select between MCQ, Structured Essay, or Practical formats.",
+      icon: Document,
     },
     {
-      title: "Answer & Reveal",
-      description: `Try each question yourself, then click "Show Answer" to reveal the official answer and learn instantly.`,
-      icon: <AimOutlined />,
+      number: "03",
+      title: "Practice & Work Through Questions",
+      description:
+        "Navigate questions using the structured sidebar. Read formulas rendered in crisp LaTeX, review figures, and select your choice.",
+      icon: ArrowRight,
+    },
+    {
+      number: "04",
+      title: "Reveal Solutions & Instant Feedback",
+      description:
+        "Verify your answers with official marking schemes and detailed step-by-step LaTeX solutions.",
+      icon: Checkmark,
     },
   ];
 
   return (
-    <div className="min-h-screen py-12 px-4" style={{ background: token.colorBgLayout }}>
-      <Card
-        variant="borderless"
-        style={{
-          maxWidth: 900,
-          margin: "0 auto",
-          background: token.colorBgContainer,
-          boxShadow: token.boxShadow,
-        }}
+    <div
+      style={{
+        maxWidth: "960px",
+        margin: "0 auto",
+        padding: "3.5rem 1.5rem 6rem 1.5rem",
+      }}
+    >
+      <Breadcrumb noTrailingSlash style={{ marginBottom: "2rem" }}>
+        <BreadcrumbItem>
+          <Link href="/" className="cds--link">
+            Home
+          </Link>
+        </BreadcrumbItem>
+        <BreadcrumbItem isCurrentPage>Guide</BreadcrumbItem>
+      </Breadcrumb>
+
+      <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+        <h1
+          style={{
+            fontSize: "2.5rem",
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
+            color: "var(--cds-text-primary)",
+            marginBottom: "0.75rem",
+          }}
+        >
+          How to Use OpenPapers
+        </h1>
+        <p
+          style={{
+            fontSize: "1.125rem",
+            color: "var(--cds-text-secondary)",
+            maxWidth: "600px",
+            margin: "0 auto",
+            lineHeight: 1.5,
+          }}
+        >
+          An open, structured platform designed for effective practice and deep conceptual review.
+        </p>
+      </div>
+
+      <div
+        style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "3rem" }}
       >
-        <Typography style={{ textAlign: "center", marginBottom: 48 }}>
-          <Title
-            level={1}
-            style={{
-              background: `linear-gradient(to right, ${token.colorPrimary}, ${token.colorInfo})`,
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            How to Use OpenPapers
-          </Title>
-          <Paragraph style={{ fontSize: 16, color: token.colorTextSecondary }}>
-            Follow these quick steps to get practicing in seconds.
-          </Paragraph>
-        </Typography>
+        {guideSteps.map((step, idx) => {
+          const Icon = step.icon;
+          return (
+            <Tile
+              key={idx}
+              style={{
+                padding: "2rem",
+                border: "1px solid var(--cds-border-subtle-01)",
+                backgroundColor: "var(--cds-layer-01)",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "1.5rem",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--op-font-sans)",
+                  fontSize: "1.5rem",
+                  fontWeight: 700,
+                  color: "var(--cds-interactive)",
+                  padding: "0.5rem 1rem",
+                  backgroundColor: "var(--cds-layer-02)",
+                  border: "1px solid var(--cds-border-subtle-01)",
+                  minWidth: "60px",
+                  textAlign: "center",
+                }}
+              >
+                {step.number}
+              </div>
 
-        <Steps
-          direction="vertical"
-          size="default"
-          items={guideSteps.map((step) => ({
-            title: (
-              <Text strong style={{ fontSize: 18 }}>
-                {step.title}
-              </Text>
-            ),
-            description: (
-              <Paragraph style={{ color: token.colorTextSecondary }}>{step.description}</Paragraph>
-            ),
-            icon: step.icon,
-            status: "process",
-          }))}
-        />
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <Icon size={20} style={{ color: "var(--cds-interactive)" }} />
+                  <h2
+                    style={{
+                      fontSize: "1.25rem",
+                      fontWeight: 600,
+                      margin: 0,
+                      color: "var(--cds-text-primary)",
+                    }}
+                  >
+                    {step.title}
+                  </h2>
+                </div>
+                <p style={{ margin: 0, color: "var(--cds-text-secondary)", lineHeight: 1.6 }}>
+                  {step.description}
+                </p>
+              </div>
+            </Tile>
+          );
+        })}
+      </div>
 
-        <div style={{ textAlign: "center", marginTop: 48 }}>
-          <Space>
-            <Text type="secondary">Ready? Head back to the</Text>
-            <Link href="/" passHref>
-              <Button type="primary" icon={<HomeOutlined />}>
-                Home page
-              </Button>
-            </Link>
-            <Text type="secondary">and start practising!</Text>
-          </Space>
-        </div>
-      </Card>
+      <div style={{ textAlign: "center" }}>
+        <Button as={Link} href="/" kind="primary" renderIcon={Home} size="lg">
+          Start Practicing Now
+        </Button>
+      </div>
     </div>
   );
-};
-
-export default GuidePage;
+}

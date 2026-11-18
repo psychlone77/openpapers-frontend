@@ -1,23 +1,41 @@
-"use client";
+import React from "react";
+import { HeroSearchConsole } from "@/components/home/HeroSearchConsole";
+import { BrowseByExamSection } from "@/components/home/BrowseByExamSection";
+import { LatestPapersSection } from "@/components/home/LatestPapersSection";
+import { PopularTopicsSection } from "@/components/home/PopularTopicsSection";
+import { CommunityCtaSection } from "@/components/home/CommunityCtaSection";
+import { fetchExams, fetchSubjects, fetchRecentPapers } from "@/lib/api/curriculum";
 
-import { PaperSearchBox } from "@/components/PaperSearchBox";
-import { Typography } from "antd";
+export const metadata = {
+  title: "OpenPapers | Academic Examination Archive Portal",
+  description:
+    "Search past examination papers, official marking rubrics, and community-verified solutions across secondary and university exams.",
+};
 
-export default function Home() {
+export default async function Home() {
+  // Fetch curriculum and recent activity data in parallel from backend
+  const [exams, subjects, recentPapers] = await Promise.all([
+    fetchExams(),
+    fetchSubjects(),
+    fetchRecentPapers(),
+  ]);
+
   return (
-    <main className="flex flex-col items-center p-24">
-      <div className="-z-10 fixed top-0 left-0 bottom-0 h-svh w-screen dotted-bg"></div>
-      <Typography.Title level={1} style={{ fontSize: "2.25rem", textAlign: "center" }}>
-        Welcome to OpenPapers
-      </Typography.Title>
-      <Typography.Paragraph
-        style={{ fontSize: "1.125rem", textAlign: "center", marginTop: "1rem" }}
-      >
-        An open platform for all exam papers
-      </Typography.Paragraph>
-      <div className="mt-16">
-        <PaperSearchBox />
-      </div>
-    </main>
+    <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
+      {/* 1. Hero & 4-Dropdown Search Console */}
+      <HeroSearchConsole exams={exams} subjects={subjects} />
+
+      {/* 2. Directory: Browse by Exam */}
+      <BrowseByExamSection exams={exams} />
+
+      {/* 3. Community Activity: Latest Papers & Answers */}
+      <LatestPapersSection recentPapers={recentPapers} />
+
+      {/* 4. Practice by Topic: Popular Topics & Practice Questions */}
+      <PopularTopicsSection />
+
+      {/* 5. Community Contribution CTA */}
+      <CommunityCtaSection />
+    </div>
   );
 }

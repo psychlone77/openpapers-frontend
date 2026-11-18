@@ -1,0 +1,37 @@
+colors: false
+no_tty: true
+output:
+  - failure
+
+pre-commit:
+  parallel: true
+  commands:
+    prettier:
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,md,scss,css,yml,yaml}"
+      run: bunx prettier --check {staged_files}
+    eslint:
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
+      run: bunx eslint {staged_files}
+
+commit-msg:
+  commands:
+    conventional-commit:
+      run: |
+        subject=$(head -n 1 {1})
+        if ! printf '%s\n' "$subject" | grep -Eq '^(feat|fix|refactor|chore|docs|test)(\([a-z0-9-]+\))?: .+'; then
+          echo "ERROR: Invalid commit message. Please follow the Conventional Commits format."
+          echo "Commit messages must follow the format: <action>: <simple summary>"
+          echo "Allowed actions: feat, fix, refactor, chore, docs, test (optional scope in parentheses)."
+          echo "Example: feat: add user profile stats"
+          exit 1
+        fi
+
+pre-push:
+  piped: true
+  commands:
+    format-check:
+      run: bun run format:check
+    lint:
+      run: bun run lint
+    build:
+      run: bun run build
