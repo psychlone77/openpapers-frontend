@@ -45,7 +45,7 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
           img: ({ src, alt }) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={resolveImageSrc(src)}
+              src={resolveImageSrc(typeof src === "string" ? src : undefined)}
               alt={alt || "Diagram"}
               style={{
                 maxWidth: "100%",
